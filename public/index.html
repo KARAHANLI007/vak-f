@@ -50,6 +50,25 @@
     .nav-link:hover { background:#ecfdf5; }
     .nav-link.active { background:#16A34A; color:white; }
     .submenu { padding-left:1.5rem; display:flex; flex-direction:column; gap:0.25rem; }
+    /* Sidebar'a yumuşak geçiş efekti ekle */
+#sidebar {
+    transition: width 0.3s ease-in-out;
+}
+
+/* Daraltılmış sidebar stilleri */
+#sidebar.collapsed {
+    width: 80px; /* Daraltılmış genişlik */
+}
+
+#sidebar.collapsed .menu-text,
+#sidebar.collapsed .logo-container {
+    display: none; /* Metinleri ve logoyu gizle */
+}
+
+#sidebar.collapsed .nav-link,
+#sidebar.collapsed #logout-btn {
+    justify-content: center; /* İkonları ortala */
+}
   </style>
 </head>
 
@@ -372,8 +391,21 @@ if (pageKey === "finansalraporlar") {
         new Date().toLocaleString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 
     // Sidebar toggle
-    const sidebarToggleBtn = document.getElementById('sidebar-toggle');
-    sidebarToggleBtn.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('w-16')); // w-64 idi, w-16 daha iyi bir daraltma olabilir.
+ const sidebar = document.getElementById('sidebar');
+const sidebarToggleBtn = document.getElementById('sidebar-toggle');
+const sidebarToggleIcon = sidebarToggleBtn.querySelector('i');
+
+sidebarToggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    // Ok ikonunu değiştir
+    if (sidebar.classList.contains('collapsed')) {
+        sidebarToggleIcon.classList.remove('fa-chevron-left');
+        sidebarToggleIcon.classList.add('fa-chevron-right');
+    } else {
+        sidebarToggleIcon.classList.remove('fa-chevron-right');
+        sidebarToggleIcon.classList.add('fa-chevron-left');
+    }
+});
 
     // Tema toggle
     const themeToggle = document.getElementById('theme-toggle');
