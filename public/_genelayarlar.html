@@ -1,0 +1,98 @@
+<section class="p-6 h-full">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800">Genel Ayarlar</h1>
+        <p class="text-gray-500 mt-1">Vakıf ve panel bilgilerini buradan güncelleyebilirsiniz.</p>
+    </div>
+
+    <form id="genel-ayarlar-form" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-slate-700 mb-4 border-b pb-3">Vakıf Bilgileri</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label for="vakif-adi" class="block text-sm font-semibold text-gray-700">Vakıf Adı</label>
+                        <input type="text" name="vakif-adi" value="Genç Hareket Vakfı" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label for="vergi-no" class="block text-sm font-semibold text-gray-700">Vergi Numarası / Sicil No</label>
+                        <input type="text" name="vergi-no" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-slate-700 mb-4 border-b pb-3">İletişim ve Sosyal Medya</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label for="telefon" class="block text-sm font-semibold text-gray-700">Telefon</label><input type="tel" name="telefon" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div><label for="email" class="block text-sm font-semibold text-gray-700">E-posta</label><input type="email" name="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div class="md:col-span-2"><label for="adres" class="block text-sm font-semibold text-gray-700">Adres</label><textarea name="adres" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></textarea></div>
+                    <div>
+                        <label for="instagram" class="block text-sm font-semibold text-gray-700">Instagram</label>
+                        <div class="mt-1 flex rounded-md shadow-sm">
+                            <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm"><i class="fab fa-instagram"></i></span>
+                            <input type="text" name="instagram" placeholder="kullaniciadi" class="flex-1 block w-full rounded-none rounded-r-md border border-gray-300 p-2">
+                        </div>
+                    </div>
+                     <div>
+                        <label for="twitter" class="block text-sm font-semibold text-gray-700">X (Twitter)</label>
+                        <div class="mt-1 flex rounded-md shadow-sm">
+                            <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm"><i class="fab fa-twitter"></i></span>
+                            <input type="text" name="twitter" placeholder="kullaniciadi" class="flex-1 block w-full rounded-none rounded-r-md border border-gray-300 p-2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-slate-700 mb-4">Vakıf Logosu</h3>
+                <div class="flex flex-col items-center">
+                    <img id="logo-preview" src="/footerLogoDikey.png" alt="Logo Önizleme" class="h-24 w-auto mb-4 rounded border p-2">
+                    <input id="logo-input" name="logo" type="file" class="hidden" accept="image/*">
+                    <button type="button" onclick="document.getElementById('logo-input').click()" class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-sm">Logoyu Değiştir</button>
+                </div>
+            </div>
+
+             <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-slate-700 mb-4">Panel Ayarları</h3>
+                <div>
+                    <label for="panel-renk" class="block text-sm font-semibold text-gray-700">Ana Tema Rengi</label>
+                    <input type="color" name="panel-renk" value="#16A34A" class="mt-1 h-10 w-full block border border-gray-300 rounded-md cursor-pointer">
+                </div>
+            </div>
+            
+            <button type="submit" class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-sm font-bold text-base">
+                <i class="fas fa-check mr-2"></i>Ayarları Kaydet
+            </button>
+        </div>
+    </form>
+</section>
+
+<script>
+ function initGenelAyarlar(){
+    const fileInput = document.getElementById('logo-input');
+    const imagePreview = document.getElementById('logo-preview');
+    const form = document.getElementById('genel-ayarlar-form');
+
+    // --- Logo önizleme ---
+    function handleLogoPreview() {
+        const file = fileInput.files[0];
+        if (file) {
+            imagePreview.src = URL.createObjectURL(file);
+        }
+    }
+    fileInput.addEventListener('change', handleLogoPreview);
+
+    // --- Form submit ---
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const ayarlar = Object.fromEntries(formData.entries());
+        console.log("Kaydedilecek Ayarlar:", ayarlar);
+        alert(`Ayarlar başarıyla kaydedildi!`);
+    }
+    form.addEventListener('submit', handleFormSubmit);
+}
+</script>

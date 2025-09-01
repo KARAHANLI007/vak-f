@@ -1,0 +1,227 @@
+<section class="bg-white page-content-bg rounded-[15px] p-6 h-full flex flex-col">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold">Proje Listesi</h1>
+        <button id="open-proje-modal-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-sm flex items-center">
+            <i class="fas fa-plus mr-2"></i>Yeni Proje Oluştur
+        </button>
+    </div>
+
+    <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
+        <div class="relative w-full md:flex-1">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" placeholder="Proje adına veya liderine göre ara..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+        <select class="border border-gray-300 rounded-lg px-3 py-2 w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option>Tüm Durumlar</option>
+            <option>Planlama</option>
+            <option>Devam Ediyor</option>
+            <option>Tamamlandı</option>
+            <option>Askıya Alındı</option>
+        </select>
+    </div>
+
+    <div class="flex-1 overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-gray-50 border-b">
+                <tr>
+                    <th class="p-3 text-sm font-semibold text-gray-600 w-1/4">Proje Adı</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600">Proje Lideri</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600">Tarih Aralığı</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600 w-1/5">İlerleme</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600">Durum</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600 text-right">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                <tr class="hover:bg-gray-50">
+                    <td class="p-3 font-bold">Kışlık Giysi Toplama Kampanyası</td>
+                    <td class="p-3 text-sm text-gray-600">Ayşe Yılmaz</td>
+                    <td class="p-3 text-sm text-gray-600">01.09.2025 - 30.11.2025</td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-green-600 h-2.5 rounded-full" style="width: 75%"></div>
+                            </div>
+                            <span class="text-sm font-medium">75%</span>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <span class="bg-orange-100 text-orange-700 rounded-full px-3 py-1 text-xs font-semibold">Devam Ediyor</span>
+                    </td>
+                    <td class="p-3 text-right">
+                        <button class="text-gray-500 hover:text-green-600 p-2"><i class="fas fa-pencil-alt"></i></button>
+                        <button class="text-gray-500 hover:text-red-600 p-2"><i class="fas fa-archive"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Modal -->
+<div id="add-proje-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center p-5 border-b">
+            <h2 class="text-xl font-semibold text-slate-700">Yeni Proje Oluştur / Düzenle</h2>
+            <button class="close-proje-modal-btn text-gray-400 hover:text-gray-600"><i class="fas fa-times fa-lg"></i></button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <form id="add-proje-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Proje Adı</label>
+                    <input type="text" name="proje-adi" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Proje Özeti/Amacı</label>
+                    <textarea name="proje-ozeti" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Proje Lideri</label>
+                        <input type="text" name="proje-lideri" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tahmini Bütçe (₺)</label>
+                        <input type="number" name="tahmini-butce" value="0" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Başlangıç Tarihi</label>
+                        <input type="date" name="baslangic-tarihi" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Hedef Bitiş Tarihi</label>
+                        <input type="date" name="bitis-tarihi" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">İlerleme (%)</label>
+                    <input type="number" name="proje-ilerleme" min="0" max="100" value="0" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Durum</label>
+                    <select name="proje-durum" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        <option>Planlama</option>
+                        <option>Devam Ediyor</option>
+                        <option>Tamamlandı</option>
+                        <option>Askıya Alındı</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="flex justify-end items-center gap-3 p-5 border-t bg-gray-50 rounded-b-2xl">
+            <button type="button" class="close-proje-modal-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+            <button type="submit" form="add-proje-form" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function initProjeListesi() {
+    const modal = document.getElementById('add-proje-modal');
+    const openModalBtn = document.getElementById('open-proje-modal-btn');
+    const closeModalBtns = document.querySelectorAll('.close-proje-modal-btn');
+    const addProjeForm = document.getElementById('add-proje-form');
+    const projeTable = document.querySelector('tbody');
+
+    let currentEditingRow = null;
+
+    const openModal = () => modal.classList.remove('hidden');
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        addProjeForm.reset();
+        currentEditingRow = null;
+    };
+
+    openModalBtn.addEventListener('click', () => {
+        currentEditingRow = null;
+        openModal();
+    });
+
+    closeModalBtns.forEach(btn => btn.addEventListener('click', closeModal));
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    function getDurumClass(durum) {
+        switch(durum) {
+            case 'Planlama': return 'bg-blue-100 text-blue-700';
+            case 'Devam Ediyor': return 'bg-orange-100 text-orange-700';
+            case 'Tamamlandı': return 'bg-green-100 text-green-700';
+            case 'Askıya Alındı': return 'bg-gray-100 text-gray-700';
+            default: return 'bg-gray-100 text-gray-700';
+        }
+    }
+
+    function attachEditButtons() {
+        projeTable.querySelectorAll('tr').forEach(row => {
+            const editBtn = row.querySelector('.fa-pencil-alt')?.parentElement;
+            if (!editBtn) return;
+
+            editBtn.onclick = () => {
+                currentEditingRow = row;
+                addProjeForm['proje-adi'].value = row.cells[0].innerText;
+                addProjeForm['proje-lideri'].value = row.cells[1].innerText;
+                const tarihAraligi = row.cells[2].innerText.split(' - ');
+                addProjeForm['baslangic-tarihi'].value = tarihAraligi[0];
+                addProjeForm['bitis-tarihi'].value = tarihAraligi[1] !== "..." ? tarihAraligi[1] : '';
+                const ilerlemeText = row.cells[3].querySelector('span').innerText.replace('%','');
+                addProjeForm['proje-ilerleme'].value = ilerlemeText;
+                addProjeForm['proje-durum'].value = row.cells[4].innerText;
+                openModal();
+            };
+        });
+    }
+
+    attachEditButtons();
+
+    addProjeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(addProjeForm);
+        const projeVerileri = Object.fromEntries(formData.entries());
+        const ilerlemeYuzde = Math.min(Math.max(projeVerileri['proje-ilerleme'] || 0, 0), 100);
+
+        if (currentEditingRow) {
+            currentEditingRow.cells[0].innerText = projeVerileri['proje-adi'];
+            currentEditingRow.cells[1].innerText = projeVerileri['proje-lideri'];
+            currentEditingRow.cells[2].innerText = `${projeVerileri['baslangic-tarihi']} - ${projeVerileri['bitis-tarihi'] || '...'}`;
+            currentEditingRow.cells[3].querySelector('div > div').style.width = ilerlemeYuzde + '%';
+            currentEditingRow.cells[3].querySelector('span').innerText = ilerlemeYuzde + '%';
+
+            const durumSpan = currentEditingRow.cells[4].querySelector('span');
+            durumSpan.innerText = projeVerileri['proje-durum'];
+            durumSpan.className = `rounded-full px-3 py-1 text-xs font-semibold ${getDurumClass(projeVerileri['proje-durum'])}`;
+        } else {
+            const newRow = document.createElement('tr');
+            newRow.classList.add('hover:bg-gray-50');
+            newRow.innerHTML = `
+                <td class="p-3 font-bold">${projeVerileri['proje-adi']}</td>
+                <td class="p-3 text-sm text-gray-600">${projeVerileri['proje-lideri']}</td>
+                <td class="p-3 text-sm text-gray-600">${projeVerileri['baslangic-tarihi']} - ${projeVerileri['bitis-tarihi'] || '...'}</td>
+                <td class="p-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-green-600 h-2.5 rounded-full" style="width: ${ilerlemeYuzde}%"></div>
+                        </div>
+                        <span class="text-sm font-medium">${ilerlemeYuzde}%</span>
+                    </div>
+                </td>
+                <td class="p-3">
+                    <span class="rounded-full px-3 py-1 text-xs font-semibold ${getDurumClass(projeVerileri['proje-durum'])}">
+                        ${projeVerileri['proje-durum']}
+                    </span>
+                </td>
+                <td class="p-3 text-right">
+                    <button class="text-gray-500 hover:text-green-600 p-2"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="text-gray-500 hover:text-red-600 p-2"><i class="fas fa-archive"></i></button>
+                </td>
+            `;
+            projeTable.appendChild(newRow);
+            attachEditButtons();
+        }
+
+        closeModal();
+    });
+}
+
+initProjeListesi();
+</script>

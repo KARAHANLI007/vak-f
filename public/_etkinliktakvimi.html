@@ -1,0 +1,99 @@
+<section class="bg-white page-content-bg rounded-[15px] p-6 h-full flex flex-col">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold">Etkinlik Takvimi</h1>
+            <p class="text-gray-500 mt-1">Etkinlikleri sürükleyip bırakarak tarihlerini değiştirebilirsiniz.</p>
+        </div>
+        <button id="open-etkinlik-modal-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-sm flex items-center self-end">
+            <i class="fas fa-plus mr-2"></i>Yeni Etkinlik Ekle
+        </button>
+    </div>
+
+    <div id='calendar-container' class="flex-1">
+        <div id='calendar'></div>
+    </div>
+</section>
+
+<style>
+    #calendar-container { font-size: 14px; }
+    #calendar .fc-button {
+        background-color: #f3f4f6; color: #374151; border: 1px solid #d1d5db;
+        box-shadow: none; transition: background-color 0.2s; text-transform: capitalize;
+    }
+    #calendar .fc-button:hover { background-color: #e5e7eb; }
+    #calendar .fc-button-primary:not(:disabled).fc-button-active,
+    #calendar .fc-button-primary:not(:disabled):active {
+        background-color: #16A34A; color: white; border-color: #16A34A;
+    }
+    #calendar .fc-event {
+        background-color: #15803d; border-color: #14532d; cursor: pointer;
+        padding: 3px 5px; font-size: 12px;
+    }
+    #calendar .fc-day-today { background-color: rgba(22, 163, 74, 0.08); }
+</style>
+
+<script>
+function initEtkinlikTakvimi() {
+    const calendarEl = document.getElementById('calendar');
+    const etkinlikModal = document.getElementById('add-etkinlik-modal');
+    const openModalBtn = document.getElementById('open-etkinlik-modal-btn');
+
+    if (!calendarEl || typeof FullCalendar === 'undefined') {
+        console.error("FullCalendar yüklenemedi veya #calendar bulunamadı.");
+        if (calendarEl) {
+            calendarEl.innerHTML = '<p class="text-red-500 font-bold p-4">Hata: Takvim yüklenemedi.</p>';
+        }
+        return;
+    }
+
+    // Modal açma butonu
+    if (openModalBtn && etkinlikModal) {
+        openModalBtn.addEventListener('click', () => {
+            etkinlikModal.classList.remove('hidden');
+        });
+    }
+
+    // Etkinlik verileri
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+
+    const etkinlikler = [
+        { title: 'Gönüllü Kahvaltısı', start: `${year}-${month}-25T10:00:00` },
+        { title: 'Yazılım Atölyesi', start: `${year}-${month}-15` },
+        { title: 'Kamp Başvuruları',
+          start: `${year}-${String(today.getMonth() + 2).padStart(2, '0')}-01`,
+          color: '#db2777' }
+    ];
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'tr',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
+        buttonText: { today: 'Bugün', month: 'Ay', week: 'Hafta', list: 'Liste' },
+        events: etkinlikler,
+        editable: true,
+        droppable: true,
+
+        dateClick: function(info) {
+            if (etkinlikModal) {
+                const startDateInput = etkinlikModal.querySelector('input[name="baslangic-tarihi"]');
+                if (startDateInput) {
+                    const isoDate = new Date(info.dateStr + 'T09:00:00').toISOString().slice(0, 16);
+                    startDateInput.value = isoDate;
+                }
+                etkinlikModal.classList.remove('hidden');
+            }
+        },
+        eventClick: function(info) {
+            alert('Etkinlik: ' + info.event.title);
+        }
+    });
+
+    calendar.render();
+}
+</script>

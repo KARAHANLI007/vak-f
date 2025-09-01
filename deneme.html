@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="tr" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vakıf Yönetim Paneli</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-light: #f1f5f9;
+            --bg-dark: #0b1120;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --primary-dark: #3730a3;
+            --glass-light: rgba(255, 255, 255, 0.6);
+            --glass-dark: rgba(30, 41, 59, 0.6);
+            --border-light: rgba(255, 255, 255, 0.3);
+            --border-dark: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Temel Sayfa Stilleri */
+        html, body { height: 100%; width: 100%; margin: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-light); }
+        .dark body { background-color: var(--bg-dark); }
+
+        /* Kaydırma Çubuğu */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.5); }
+        
+        /* Arka Plan Animasyonu */
+        @keyframes gradient-move {
+            0% { transform: translate(-20%, -20%) rotate(0deg); }
+            50% { transform: translate(20%, 20%) rotate(180deg); }
+            100% { transform: translate(-20%, -20%) rotate(360deg); }
+        }
+        .main-bg::before, .main-bg::after {
+            content: ''; position: fixed; border-radius: 50%; z-index: -1;
+            animation: gradient-move 25s ease-in-out infinite;
+            filter: blur(150px);
+        }
+        .main-bg::before { width: 500px; height: 500px; background: linear-gradient(135deg, #6366f1, #a855f7); left: -10%; top: -10%; opacity: 0.6; }
+        .main-bg::after { width: 450px; height: 450px; background: linear-gradient(135deg, #f59e0b, #ec4899); right: -10%; bottom: -10%; opacity: 0.5; animation-delay: -5s; }
+        .dark .main-bg::before { opacity: 0.4; }
+        .dark .main-bg::after { opacity: 0.3; }
+
+        /* Glassmorphism Efekti */
+        .glass-effect {
+            background: var(--glass-light);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--border-light);
+        }
+        .dark .glass-effect { background: var(--glass-dark); border: 1px solid var(--border-dark); }
+        
+        /* Animasyonlar */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
+        
+        /* Menü Stilleri */
+        .header-menu { display:flex; gap:0.5rem; background:rgba(255,255,255,0.7); padding:0.5rem; border-radius:15px; margin-bottom:8px; }
+        .dark .header-menu { background:rgba(30, 41, 59, 0.7); }
+        .header-menu-item { cursor:pointer; padding:0.5rem 1rem; font-weight:600; font-size: 0.9rem; border-radius:0.75rem; transition:all .2s; color: #475569; }
+        .dark .header-menu-item { color: #cbd5e1; }
+        .header-menu-item:hover { background:var(--primary-light); color: var(--primary); }
+        .dark .header-menu-item:hover { background:rgba(79, 70, 229, 0.2); }
+        .header-menu-item.active { background:var(--primary); color:white; box-shadow: 0 4px 20px -2px rgba(79, 70, 229, 0.4); }
+        .dark .header-menu-item.active { background: var(--primary); }
+
+        .nav-link { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border-radius:0.5rem; cursor:pointer; font-weight:500; transition:all .2s; color: #475569;}
+        .dark .nav-link { color: #cbd5e1; }
+        .nav-link:hover { background:#e0e7ff; }
+        .dark .nav-link:hover { background:rgba(79, 70, 229, 0.2); }
+        .nav-link.active { background:var(--primary); color:white; box-shadow: 0 4px 14px -2px rgba(79, 70, 229, 0.3); }
+        .nav-link.active svg, .nav-link.active i { color: white; }
+
+        .tab-btn.active { background-color: white; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); color: var(--primary); font-weight: 600; }
+        .dark .tab-btn.active { background-color: #334155; color: #a5b4fc; }
+        
+        /* Modal, Dropdown, Toast */
+        #modal-overlay { transition: opacity 0.3s ease; }
+        #modal-container { transition: transform 0.3s ease, opacity 0.3s ease; }
+        .dropdown-menu { position: absolute; z-index: 50; display: none; transition: opacity 0.2s ease, transform 0.2s ease; transform: translateY(-10px); opacity: 0; }
+        .dropdown-menu.show { display: block; opacity: 1; transform: translateY(0); }
+        #toast { position: fixed; bottom: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 0.5rem; color: white; z-index: 100; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s ease-in-out; box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1); }
+        #toast.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        #toast.success { background-color: #10b981; }
+        #toast.error { background-color: #ef4444; }
+        #toast.info { background-color: #3b82f6; }
+
+        /* Kart Efektleri */
+        .card-hover { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.1); }
+    </style>
+    </head>
+
+<body class="main-bg flex items-center justify-center p-4">
+    <div id="app-container" class="glass-effect flex flex-row gap-2 w-full h-full max-w-[95vw] max-h-[95vh] rounded-3xl p-2 shadow-2xl">
+
+        <aside id="sidebar" class="flex flex-col bg-white/40 dark:bg-slate-900/30 rounded-2xl w-64 flex-shrink-0 p-4 transition-all duration-300 ease-in-out">
+            <div class="logo-container flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg">V</div>
+                <span class="text-xl font-bold text-gray-800 dark:text-white">Vakıf Paneli</span>
+            </div>
+            <nav class="main-menu flex-grow">
+                <ul class="flex flex-col gap-2" id="sidebar-menus"></ul>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-400/30 dark:border-gray-600/50">
+                <a href="#" id="logout-btn" class="nav-link text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30">
+                    <i class="fas fa-sign-out-alt w-5 text-center"></i><span>Çıkış Yap</span>
+                </a>
+            </div>
+        </aside>
+
+        <main id="main-content-wrapper" class="flex-1 flex flex-col gap-2 overflow-auto min-w-0">
+            <header class="bg-indigo-600 dark:bg-indigo-800/50 rounded-2xl flex items-center justify-between p-4 gap-4">
+                <div class="flex flex-col gap-1">
+                    <h1 class="text-white text-xl font-semibold leading-tight truncate">Hoş Geldiniz, Ali Yılmaz!</h1>
+                    <p class="text-indigo-200 text-sm truncate opacity-90">Vakıf Yönetim Paneline Genel Bakış</p>
+                </div>
+                <div class="flex items-center gap-2 bg-black/10 p-1.5 rounded-full">
+                    <button id="theme-toggle" class="w-9 h-9 flex items-center justify-center text-white/80 hover:bg-white/20 rounded-full transition-colors">
+                        <i id="theme-icon" class="fas"></i>
+                    </button>
+                    <div class="relative">
+                        <button id="notifications-btn" class="relative w-9 h-9 flex items-center justify-center text-white/80 hover:bg-white/20 rounded-full transition-colors">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute top-1.5 right-1.5 block w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-indigo-600 dark:border-indigo-800"></span>
+                        </button>
+                    </div>
+                    <div id="user-menu-button" class="relative flex items-center gap-2 cursor-pointer p-1 pr-3 rounded-full hover:bg-white/20 transition-colors">
+                         <div class="w-9 h-9 rounded-full cursor-pointer flex items-center justify-center bg-fuchsia-200 dark:bg-fuchsia-800 text-fuchsia-800 dark:text-fuchsia-200 font-bold">AY</div>
+                         <i class="fas fa-chevron-down text-white/70 text-xs"></i>
+                         <div id="profile-dropdown" class="dropdown-menu top-14 right-0 bg-white dark:bg-slate-700 rounded-lg shadow-xl w-48">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600">Profilim</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600">Ayarlar</a>
+                            <hr class="border-gray-200 dark:border-gray-600">
+                            <a href="#" class="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-slate-600">Çıkış Yap</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="header-menu" id="header-menu"></div>
+
+            <div id="content-area" class="flex-1 overflow-y-auto rounded-2xl bg-white/20 dark:bg-slate-800/20 p-8 min-w-0">
+                <section id="genel-bakis" class="page-section animate-fadeInUp">
+                    <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Genel Bakış</h1>
+                            <p class="text-gray-500 dark:text-gray-400">Vakıf faaliyetlerine haftalık bakış.</p>
+                        </div>
+                        <div id="time-range-tabs" class="flex items-center bg-white/60 dark:bg-slate-700/50 rounded-lg p-1 text-sm">
+                            <button class="tab-btn px-3 py-1 rounded-md text-gray-600 dark:text-gray-300">Bu Ay</button>
+                            <button class="tab-btn px-3 py-1 rounded-md active">Bu Hafta</button>
+                        </div>
+                    </header>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl card-hover">
+                            <div class="flex items-center mb-4">
+                                <div class="w-10 h-10 rounded-full mr-4 bg-sky-100 dark:bg-sky-500/20 flex items-center justify-center font-bold text-sky-600 dark:text-sky-300">E</div>
+                                <div><p class="font-semibold text-gray-800 dark:text-gray-200">Eğitim Projesi</p><p class="text-sm text-gray-500 dark:text-gray-400">Köy Okulları</p></div>
+                            </div>
+                            <canvas class="my-4" id="chart1" height="50"></canvas>
+                            <div><p class="text-2xl font-bold text-gray-800 dark:text-white">125.000₺</p><p class="text-sm text-gray-500 dark:text-gray-400">Toplanan Bağış</p></div>
+                        </div>
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl card-hover">
+                            <div class="flex items-center mb-4">
+                                <div class="w-10 h-10 rounded-full mr-4 bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center font-bold text-violet-600 dark:text-violet-300">S</div>
+                                <div><p class="font-semibold text-gray-800 dark:text-gray-200">Sağlık Taraması</p><p class="text-sm text-gray-500 dark:text-gray-400">Gezici Klinik</p></div>
+                            </div>
+                            <canvas class="my-4" id="chart2" height="50"></canvas>
+                            <div><p class="text-2xl font-bold text-gray-800 dark:text-white">78</p><p class="text-sm text-gray-500 dark:text-gray-400">Gönüllü Doktor</p></div>
+                        </div>
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl card-hover">
+                            <div class="flex items-center mb-4">
+                                <div class="w-10 h-10 rounded-full mr-4 bg-pink-100 dark:bg-pink-500/20 flex items-center justify-center font-bold text-pink-600 dark:text-pink-300">G</div>
+                                <div><p class="font-semibold text-gray-800 dark:text-gray-200">Gıda Yardımı</p><p class="text-sm text-gray-500 dark:text-gray-400">Ramazan Kampanyası</p></div>
+                            </div>
+                            <canvas class="my-4" id="chart3" height="50"></canvas>
+                            <div><p class="text-2xl font-bold text-gray-800 dark:text-white">1.500</p><p class="text-sm text-gray-500 dark:text-gray-400">Dağıtılan Koli</p></div>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Son Bağış Hareketleri</h2>
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl">
+                            <table class="w-full text-left">
+                                <thead><tr class="text-sm text-gray-500 dark:text-gray-400"><th class="pb-4 font-normal">BAĞIŞÇI / İŞLEM ID</th><th class="pb-4 font-normal">MİKTAR</th><th class="pb-4 font-normal">DURUM</th></tr></thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-200/50 dark:border-gray-700/50">
+                                        <td class="py-4"><div class="flex items-center"><div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mr-3"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M20 6 9 17l-5-5"/></svg></div><div><p class="font-semibold text-gray-800 dark:text-gray-200">Ahmet Yılmaz (#10023)</p><p class="text-xs text-gray-500 dark:text-gray-400">Bugün, 10:30</p></div></div></td>
+                                        <td class="py-4 font-semibold text-gray-800 dark:text-gray-200">+650.00₺</td>
+                                        <td class="py-4"><span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm font-semibold px-3 py-1 rounded-full">Başarılı</span></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-200/50 dark:border-gray-700/50">
+                                        <td class="py-4"><div class="flex items-center"><div class="w-8 h-8 bg-amber-100 dark:bg-amber-500/20 rounded-full flex items-center justify-center mr-3"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><path d="m15 15-6 6"/><path d="m9 15 6 6"/><path d="M12 3v14"/><path d="m12 21 3-3-3-3"/></svg></div><div><p class="font-semibold text-gray-800 dark:text-gray-200">İade İşlemi (#10024)</p><p class="text-xs text-gray-500 dark:text-gray-400">Bugün, 10:20</p></div></div></td>
+                                        <td class="py-4 font-semibold text-gray-800 dark:text-gray-200">-250.00₺</td>
+                                        <td class="py-4"><span class="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-sm font-semibold px-3 py-1 rounded-full">İade Edildi</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-4"><div class="flex items-center"><div class="w-8 h-8 bg-red-100 dark:bg-red-500/20 rounded-full flex items-center justify-center mr-3"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></div><div><p class="font-semibold text-gray-800 dark:text-gray-200">Zeynep Kaya (#10025)</p><p class="text-xs text-gray-500 dark:text-gray-400">Bugün, 10:02</p></div></div></td>
+                                        <td class="py-4 font-semibold text-gray-800 dark:text-gray-200">-128.00₺</td>
+                                        <td class="py-4"><span class="bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-sm font-semibold px-3 py-1 rounded-full">Başarısız</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="projeler" class="page-section hidden animate-fadeInUp">
+                    <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Proje Yönetimi</h1>
+                            <p class="text-gray-500 dark:text-gray-400">Aktif, planlanan ve tamamlanan projeler.</p>
+                        </div>
+                        <button id="add-project-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                            Yeni Proje Ekle
+                        </button>
+                    </header>
+                    <div id="project-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl flex flex-col card-hover" data-project-name="Köy Okullarına Destek" data-category="Eğitim" data-target="200000" data-collected="124000" data-volunteers="14" data-status="Aktif">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-sm text-gray-500 dark:text-gray-400">Eğitim</p><p class="font-bold text-lg text-gray-800 dark:text-white">Köy Okullarına Destek</p></div>
+                                <span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">Aktif</span>
+                            </div>
+                            <div class="my-4">
+                                <div class="flex justify-between text-sm mb-1"><span class="text-gray-600 dark:text-gray-300">Hedef: 200.000₺</span><span class="font-semibold text-gray-800 dark:text-white">62%</span></div>
+                                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2"><div class="bg-indigo-500 h-2 rounded-full" style="width: 62%"></div></div>
+                            </div>
+                            <div class="flex-grow"></div>
+                            <div class="flex justify-between items-center mt-4 text-sm">
+                                <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    <span>14 Gönüllü</span>
+                                </div>
+                                <button class="project-details-btn text-indigo-500 font-semibold hover:text-indigo-700 dark:hover:text-indigo-300">Detaylar →</button>
+                            </div>
+                        </div>
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl flex flex-col card-hover" data-project-name="Sokak Hayvanları" data-category="Çevre" data-target="50000" data-collected="45000" data-volunteers="25" data-status="Tamamlandı">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-sm text-gray-500 dark:text-gray-400">Çevre</p><p class="font-bold text-lg text-gray-800 dark:text-white">Sokak Hayvanları</p></div>
+                                <span class="bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold px-2 py-1 rounded-full">Tamamlandı</span>
+                            </div>
+                            <div class="my-4">
+                                <div class="flex justify-between text-sm mb-1"><span class="text-gray-600 dark:text-gray-300">Hedef: 50.000₺</span><span class="font-semibold text-gray-800 dark:text-white">100%</span></div>
+                                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2"><div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div></div>
+                            </div>
+                            <div class="flex-grow"></div>
+                            <div class="flex justify-between items-center mt-4 text-sm">
+                               <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    <span>25 Gönüllü</span>
+                                </div>
+                                <button class="project-details-btn text-indigo-500 font-semibold hover:text-indigo-700 dark:hover:text-indigo-300">Detaylar →</button>
+                            </div>
+                        </div>
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl flex flex-col card-hover" data-project-name="Yaşlılara Ziyaret" data-category="Sosyal Yardım" data-target="10000" data-collected="1500" data-volunteers="8" data-status="Planlanıyor">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-sm text-gray-500 dark:text-gray-400">Sosyal Yardım</p><p class="font-bold text-lg text-gray-800 dark:text-white">Yaşlılara Ziyaret</p></div>
+                                <span class="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-semibold px-2 py-1 rounded-full">Planlanıyor</span>
+                            </div>
+                            <div class="my-4">
+                                <div class="flex justify-between text-sm mb-1"><span class="text-gray-600 dark:text-gray-300">Hedef: 10.000₺</span><span class="font-semibold text-gray-800 dark:text-white">15%</span></div>
+                                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2"><div class="bg-indigo-500 h-2 rounded-full" style="width: 15%"></div></div>
+                            </div>
+                            <div class="flex-grow"></div>
+                            <div class="flex justify-between items-center mt-4 text-sm">
+                                 <div class="flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    <span>8 Gönüllü</span>
+                                </div>
+                                <button class="project-details-btn text-indigo-500 font-semibold hover:text-indigo-700 dark:hover:text-indigo-300">Detaylar →</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="gonulluler" class="page-section hidden animate-fadeInUp">
+                     <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Gönüllü Yönetimi</h1>
+                            <p class="text-gray-500 dark:text-gray-400">Vakfımıza değer katan gönüllülerimiz.</p>
+                        </div>
+                        <button id="add-volunteer-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                            Yeni Gönüllü Ekle
+                        </button>
+                    </header>
+                    <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl">
+                        <table class="w-full text-left">
+                            <thead><tr class="text-sm text-gray-500 dark:text-gray-400"><th class="p-4 font-normal">İSİM</th><th class="p-4 font-normal">İLETİŞİM</th><th class="p-4 font-normal">UZMANLIK ALANI</th><th class="p-4 font-normal">DURUM</th><th class="p-4 font-normal"></th></tr></thead>
+                            <tbody id="volunteer-table-body" class="text-gray-800 dark:text-gray-200">
+                                 <tr class="border-b border-gray-200/50 dark:border-gray-700/50" data-name="Ayşe Demir" data-email="ayse@email.com" data-expertise="Doktor" data-status="Aktif" data-phone="555-123-4567" data-joindate="15.03.2023">
+                                    <td class="p-4"><div class="flex items-center"><div class="w-10 h-10 rounded-full mr-3 bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center font-bold text-violet-600 dark:text-violet-300">AD</div><span>Ayşe Demir</span></div></td>
+                                    <td class="p-4">ayse@email.com</td><td class="p-4">Doktor</td>
+                                    <td class="p-4"><span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">Aktif</span></td>
+                                    <td class="p-4 text-right relative"><button class="volunteer-actions-btn text-gray-500 dark:text-gray-400 hover:text-indigo-500 p-1 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                                    </button></td>
+                                </tr>
+                                <tr class="border-b border-gray-200/50 dark:border-gray-700/50" data-name="Mustafa Vural" data-email="mustafa@email.com" data-expertise="Öğretmen" data-status="Aktif" data-phone="555-987-6543" data-joindate="22.01.2023">
+                                    <td class="p-4"><div class="flex items-center"><div class="w-10 h-10 rounded-full mr-3 bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300">MV</div><span>Mustafa Vural</span></div></td>
+                                    <td class="p-4">mustafa@email.com</td><td class="p-4">Öğretmen</td>
+                                    <td class="p-4"><span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">Aktif</span></td>
+                                    <td class="p-4 text-right relative"><button class="volunteer-actions-btn text-gray-500 dark:text-gray-400 hover:text-indigo-500 p-1 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                                    </button></td>
+                                </tr>
+                                 <tr class="border-b border-gray-200/50 dark:border-gray-700/50" data-name="Fatma Çelik" data-email="fatma@email.com" data-expertise="Lojistik" data-status="Pasif" data-phone="555-555-5555" data-joindate="10.11.2022">
+                                    <td class="p-4"><div class="flex items-center"><div class="w-10 h-10 rounded-full mr-3 bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center font-bold text-rose-600 dark:text-rose-300">FÇ</div><span>Fatma Çelik</span></div></td>
+                                    <td class="p-4">fatma@email.com</td><td class="p-4">Lojistik</td>
+                                    <td class="p-4"><span class="bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold px-2 py-1 rounded-full">Pasif</span></td>
+                                    <td class="p-4 text-right relative"><button class="volunteer-actions-btn text-gray-500 dark:text-gray-400 hover:text-indigo-500 p-1 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                                    </button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                <section id="bagislar" class="page-section hidden animate-fadeInUp">
+                    <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Bağış Yönetimi</h1>
+                            <p class="text-gray-500 dark:text-gray-400">Tüm bağış hareketlerini görüntüleyin ve filtreleyin.</p>
+                        </div>
+                    </header>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl"><p class="text-sm text-gray-500 dark:text-gray-400">Toplam Bağış</p><p class="text-3xl font-bold text-gray-800 dark:text-white">2.145.000₺</p></div>
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl"><p class="text-sm text-gray-500 dark:text-gray-400">Bu Ayki Bağış</p><p class="text-3xl font-bold text-gray-800 dark:text-white">240.500₺</p></div>
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl"><p class="text-sm text-gray-500 dark:text-gray-400">Ortalama Bağış</p><p class="text-3xl font-bold text-gray-800 dark:text-white">450₺</p></div>
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl"><p class="text-sm text-gray-500 dark:text-gray-400">Toplam Bağışçı</p><p class="text-3xl font-bold text-gray-800 dark:text-white">4.766</p></div>
+                    </div>
+                    <div class="bg-white/70 dark:bg-slate-800/50 p-4 rounded-2xl mb-6 flex flex-wrap items-center gap-4">
+                        <input type="text" placeholder="Bağışçı adı veya ID ile ara..." class="flex-grow bg-gray-100 dark:bg-slate-700/80 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm">
+                        <select class="bg-gray-100 dark:bg-slate-700/80 rounded-lg py-2 px-4 focus:outline-none text-sm"><option>Tüm Projeler</option><option>Eğitim Projesi</option><option>Sağlık Taraması</option></select>
+                        <input type="date" class="bg-gray-100 dark:bg-slate-700/80 rounded-lg py-2 px-4 focus:outline-none text-sm">
+                        <button class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors shadow">Filtrele</button>
+                    </div>
+                     <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl">
+                        <table class="w-full text-left">
+                            <thead><tr class="text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200/50 dark:border-gray-700/50"><th class="py-3 px-4 font-normal">BAĞIŞÇI</th><th class="py-3 px-4 font-normal">PROJE</th><th class="py-3 px-4 font-normal">MİKTAR</th><th class="py-3 px-4 font-normal">TARİH</th><th class="py-3 px-4 font-normal">DURUM</th></tr></thead>
+                            <tbody class="text-gray-800 dark:text-gray-200 text-sm">
+                                <tr><td class="py-3 px-4">Ahmet Yılmaz</td><td class="py-3 px-4">Eğitim Projesi</td><td class="py-3 px-4 font-semibold text-emerald-600 dark:text-emerald-400">+650.00₺</td><td class="py-3 px-4">28.08.2025</td><td class="py-3 px-4"><span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">Başarılı</span></td></tr>
+                                <tr class="bg-white/20 dark:bg-slate-800/20"><td class="py-3 px-4">Elif Kaya</td><td class="py-3 px-4">Sağlık Taraması</td><td class="py-3 px-4 font-semibold text-emerald-600 dark:text-emerald-400">+200.00₺</td><td class="py-3 px-4">28.08.2025</td><td class="py-3 px-4"><span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">Başarılı</span></td></tr>
+                                <tr><td class="py-3 px-4">İade İşlemi</td><td class="py-3 px-4">-</td><td class="py-3 px-4 font-semibold text-amber-600 dark:text-amber-400">-250.00₺</td><td class="py-3 px-4">27.08.2025</td><td class="py-3 px-4"><span class="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-semibold px-2 py-1 rounded-full">İade Edildi</span></td></tr>
+                                <tr class="bg-white/20 dark:bg-slate-800/20"><td class="py-3 px-4">Zeynep Kaya</td><td class="py-3 px-4">Gıda Yardımı</td><td class="py-3 px-4 font-semibold text-red-600 dark:text-red-400">-128.00₺</td><td class="py-3 px-4">27.08.2025</td><td class="py-3 px-4"><span class="bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-xs font-semibold px-2 py-1 rounded-full">Başarısız</span></td></tr>
+                                <tr><td class="py-3 px-4">Mehmet Öztürk</td><td class="py-3 px-4">Eğitim Projesi</td><td class="py-3 px-4 font-semibold text-emerald-600 dark:text-emerald-400">+1000.00₺</td><td class="py-3 px-4">26.08.2025</td><td class="py-3 px-4"><span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">Başarılı</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                <section id="raporlar" class="page-section hidden animate-fadeInUp">
+                     <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Raporlama Merkezi</h1>
+                            <p class="text-gray-500 dark:text-gray-400">Özelleştirilmiş raporlar oluşturun ve indirin.</p>
+                        </div>
+                    </header>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-1 bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl flex flex-col">
+                            <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-4">Yeni Rapor Oluştur</h3>
+                            <form id="report-generator-form" class="space-y-4">
+                                <div><label class="text-sm font-medium text-gray-600 dark:text-gray-300">Rapor Türü</label><select class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"><option>Aylık Faaliyet Raporu</option><option>Proje Bazlı Gelir-Gider</option><option>Gönüllü Katılım Raporu</option><option>Dönemsel Bağış Özeti</option></select></div>
+                                <div><label class="text-sm font-medium text-gray-600 dark:text-gray-300">Tarih Aralığı</label><div class="flex gap-2"><input type="date" class="w-1/2 p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"><input type="date" class="w-1/2 p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"></div></div>
+                                <div><label class="text-sm font-medium text-gray-600 dark:text-gray-300">Format</label><select class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"><option>PDF</option><option>Excel (XLSX)</option><option>CSV</option></select></div>
+                                <div class="pt-2"><button type="submit" class="w-full bg-emerald-500 text-white font-semibold py-2.5 rounded-lg hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                    Rapor Oluştur
+                                </button></div>
+                            </form>
+                        </div>
+                        <div class="lg:col-span-2 space-y-8">
+                            <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl">
+                                 <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-4">Aylık Toplanan Bağışlar (₺)</h3>
+                                 <canvas id="reportsChart" height="120"></canvas>
+                            </div>
+                            <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl">
+                                <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-4">Son Oluşturulan Raporlar</h3>
+                                <ul class="space-y-3">
+                                    <li class="flex justify-between items-center p-3 bg-gray-100/50 dark:bg-slate-700/50 rounded-lg transition-all hover:shadow-md"><p class="text-sm font-medium">Temmuz 2025 Faaliyet Raporu.pdf</p><button class="text-indigo-500 hover:text-indigo-700 font-semibold text-sm">İndir</button></li>
+                                    <li class="flex justify-between items-center p-3 bg-gray-100/50 dark:bg-slate-700/50 rounded-lg transition-all hover:shadow-md"><p class="text-sm font-medium">Eğitim Projesi Gelir-Gider.xlsx</p><button class="text-indigo-500 hover:text-indigo-700 font-semibold text-sm">İndir</button></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="kullanicilar" class="page-section hidden animate-fadeInUp">
+                     <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Kullanıcı Yönetimi</h1>
+                            <p class="text-gray-500 dark:text-gray-400">Sistem kullanıcılarını ve yetkilerini yönetin.</p>
+                        </div>
+                         <button id="add-user-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                            Yeni Kullanıcı Ekle
+                        </button>
+                    </header>
+                    <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl">
+                        <table class="w-full text-left">
+                            <thead><tr class="text-sm text-gray-500 dark:text-gray-400"><th class="p-4 font-normal">İSİM</th><th class="p-4 font-normal">E-POSTA</th><th class="p-4 font-normal">YETKİ GRUBU</th><th class="p-4 font-normal">DURUM</th><th class="p-4 font-normal"></th></tr></thead>
+                            <tbody class="text-gray-800 dark:text-gray-200">
+                                 <tr class="border-b border-gray-200/50 dark:border-gray-700/50">
+                                    <td class="p-4"><div class="flex items-center"><div class="w-10 h-10 rounded-full mr-3 bg-fuchsia-100 dark:bg-fuchsia-500/20 flex items-center justify-center font-bold text-fuchsia-600 dark:text-fuchsia-300">AY</div><span>Ali Yılmaz</span></div></td>
+                                    <td class="p-4">ali.yilmaz@vakif.org</td><td class="p-4">Admin</td>
+                                    <td class="p-4"><span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">Aktif</span></td>
+                                    <td class="p-4 text-right"><button class="text-indigo-500 hover:text-indigo-700 text-sm font-semibold">Düzenle</button></td>
+                                </tr>
+                                <tr class="border-b border-gray-200/50 dark:border-gray-700/50">
+                                    <td class="p-4"><div class="flex items-center"><div class="w-10 h-10 rounded-full mr-3 bg-teal-100 dark:bg-teal-500/20 flex items-center justify-center font-bold text-teal-600 dark:text-teal-300">BK</div><span>Büşra Korkmaz</span></div></td>
+                                    <td class="p-4">busra.korkmaz@vakif.org</td><td class="p-4">Proje Yöneticisi</td>
+                                    <td class="p-4"><span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">Aktif</span></td>
+                                    <td class="p-4 text-right"><button class="text-indigo-500 hover:text-indigo-700 text-sm font-semibold">Düzenle</button></td>
+                                </tr>
+                                 <tr class="border-b border-gray-200/50 dark:border-gray-700/50">
+                                    <td class="p-4"><div class="flex items-center"><div class="w-10 h-10 rounded-full mr-3 bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center font-bold text-amber-600 dark:text-amber-300">SC</div><span>Serkan Can</span></div></td>
+                                    <td class="p-4">serkan.can@vakif.org</td><td class="p-4">İçerik Editörü</td>
+                                    <td class="p-4"><span class="bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold px-2 py-1 rounded-full">Pasif</span></td>
+                                    <td class="p-4 text-right"><button class="text-indigo-500 hover:text-indigo-700 text-sm font-semibold">Düzenle</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                <section id="yetkiler" class="page-section hidden animate-fadeInUp">
+                     <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Yetki Grupları</h1>
+                            <p class="text-gray-500 dark:text-gray-400">Kullanıcı rollerini ve izinlerini tanımlayın.</p>
+                        </div>
+                         <button id="add-role-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                            Yeni Grup Ekle
+                        </button>
+                    </header>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl card-hover">
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Admin</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Tüm sistem yetkilerine sahip tam erişim.</p>
+                            <ul class="text-sm space-y-2 text-gray-700 dark:text-gray-300">
+                                <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Kullanıcı Yönetimi</li>
+                                <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Proje Yönetimi</li>
+                                <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Bağış Yönetimi</li>
+                                <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Raporlama</li>
+                            </ul>
+                        </div>
+                         <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl card-hover">
+                            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Proje Yöneticisi</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Proje ve gönüllü yönetimi yetkileri.</p>
+                            <ul class="text-sm space-y-2 text-gray-700 dark:text-gray-300">
+                                <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>Kullanıcı Yönetimi</li>
+                                <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Proje Yönetimi</li>
+                                <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Gönüllü Yönetimi</li>
+                                <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Raporlama</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <section id="bolgeler" class="page-section hidden animate-fadeInUp">
+                    <header class="flex justify-between items-center mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Bölge Tanımları</h1>
+                            <p class="text-gray-500 dark:text-gray-400">Vakfın faaliyet gösterdiği bölgeleri yönetin.</p>
+                        </div>
+                         <button id="add-region-btn" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                            Yeni Bölge Ekle
+                        </button>
+                    </header>
+                    <div class="bg-white/70 dark:bg-slate-800/50 p-6 rounded-2xl">
+                        <table class="w-full text-left">
+                            <thead><tr class="text-sm text-gray-500 dark:text-gray-400"><th class="p-4 font-normal">BÖLGE ADI</th><th class="p-4 font-normal">İL / İLÇE</th><th class="p-4 font-normal">AKTİF PROJE SAYISI</th><th class="p-4 font-normal"></th></tr></thead>
+                            <tbody class="text-gray-800 dark:text-gray-200">
+                                 <tr class="border-b border-gray-200/50 dark:border-gray-700/50">
+                                    <td class="p-4 font-semibold">Marmara Bölgesi</td>
+                                    <td class="p-4">Tümü</td>
+                                    <td class="p-4">12</td>
+                                    <td class="p-4 text-right"><button class="text-indigo-500 hover:text-indigo-700 text-sm font-semibold">Düzenle</button></td>
+                                </tr>
+                                <tr class="border-b border-gray-200/50 dark:border-gray-700/50">
+                                    <td class="p-4 font-semibold">Ankara - Çankaya</td>
+                                    <td class="p-4">Ankara / Çankaya</td>
+                                    <td class="p-4">3</td>
+                                    <td class="p-4 text-right"><button class="text-indigo-500 hover:text-indigo-700 text-sm font-semibold">Düzenle</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 hidden items-center justify-center p-4">
+        <div id="modal-container" class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-lg p-6 transform scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-gray-700">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-800 dark:text-white"></h3>
+                <button id="modal-close" class="text-gray-500 dark:text-gray-400 text-2xl hover:text-gray-800 dark:hover:text-white">&times;</button>
+            </div>
+            <div id="modal-content" class="text-gray-600 dark:text-gray-300 max-h-[60vh] overflow-y-auto"></div>
+        </div>
+    </div>
+    <div id="volunteer-actions-dropdown" class="dropdown-menu bg-white dark:bg-slate-700 rounded-lg shadow-xl w-48">
+        <a href="#" class="action-view-profile block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600">Profili Görüntüle</a>
+        <a href="#" class="action-assign-task block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600">Görev Ata</a>
+        <hr class="border-gray-200 dark:border-gray-600">
+        <a href="#" class="action-delete-volunteer block px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-slate-600">Gönüllüyü Sil</a>
+    </div>
+    <div id="toast"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- BÖLÜM 1: YENİ MENÜ SİSTEMİ VE SAYFA YÖNETİMİ ---
+        const headerMenu = document.getElementById('header-menu');
+        const sidebarMenus = document.getElementById('sidebar-menus');
+        const pageSections = document.querySelectorAll('.page-section');
+        
+        const menuData = {
+            'dashboard': {
+                title: 'Yönetim Paneli',
+                submenus: [
+                    { name: 'Genel Bakış', pageKey: 'genel-bakis', icon: 'fa-solid fa-grip' },
+                    { name: 'Projeler', pageKey: 'projeler', icon: 'fa-solid fa-diagram-project' },
+                    { name: 'Gönüllüler', pageKey: 'gonulluler', icon: 'fa-solid fa-handshake-angle' },
+                    { name: 'Bağışlar', pageKey: 'bagislar', icon: 'fa-solid fa-hand-holding-dollar' },
+                    { name: 'Raporlar', pageKey: 'raporlar', icon: 'fa-solid fa-chart-pie' }
+                ]
+            },
+            'tanimlamalar': {
+                title: 'Tanımlamalar',
+                submenus: [
+                    { name: 'Kullanıcılar', pageKey: 'kullanicilar', icon: 'fa-solid fa-users-cog' },
+                    { name: 'Yetki Grupları', pageKey: 'yetkiler', icon: 'fa-solid fa-shield-halved' },
+                    { name: 'Bölgeler', pageKey: 'bolgeler', icon: 'fa-solid fa-map-location-dot' }
+                ]
+            }
+        };
+
+        function loadPage(pageKey, activeLink = null) {
+            pageSections.forEach(section => {
+                section.classList.toggle('hidden', section.id !== pageKey);
+            });
+            if (activeLink) {
+                document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+                activeLink.classList.add('active');
+            }
+        }
+
+        Object.keys(menuData).forEach((key, idx) => {
+            const headerItem = document.createElement('div');
+            headerItem.className = 'header-menu-item';
+            headerItem.textContent = menuData[key].title;
+            if (idx === 0) headerItem.classList.add('active');
+
+            headerItem.addEventListener('click', () => {
+                document.querySelectorAll('.header-menu-item').forEach(d => d.classList.remove('active'));
+                headerItem.classList.add('active');
+                sidebarMenus.innerHTML = '';
+                const submenus = menuData[key].submenus || [];
+                submenus.forEach((sm, smIdx) => {
+                    const listItem = document.createElement('li');
+                    const link = document.createElement('a');
+                    link.className = 'nav-link';
+                    link.href = `#${sm.pageKey}`;
+                    link.innerHTML = `<i class="${sm.icon} w-5 text-center text-lg"></i><span>${sm.name}</span>`;
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        loadPage(sm.pageKey, link);
+                    });
+                    listItem.appendChild(link);
+                    sidebarMenus.appendChild(listItem);
+                });
+                const firstSubmenuLink = sidebarMenus.querySelector('a.nav-link');
+                if (firstSubmenuLink) {
+                    firstSubmenuLink.click();
+                }
+            });
+            headerMenu.appendChild(headerItem);
+        });
+
+        if (document.querySelector('.header-menu-item')) {
+            document.querySelector('.header-menu-item').click();
+        }
+
+        // --- BÖLÜM 2: TEMA (DARK/LIGHT MODE) YÖNETİMİ ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+
+        const applyTheme = (isDark) => {
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                themeIcon.className = 'fas fa-sun';
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIcon.className = 'fas fa-moon';
+            }
+            updateChartsTheme();
+        };
+        
+        const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = localStorage.getItem('color-theme');
+        applyTheme(savedTheme === 'dark' || (!savedTheme && isSystemDark));
+
+        themeToggleBtn.addEventListener('click', function() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+            applyTheme(isDark);
+        });
+
+        // --- BÖLÜM 3: GRAFİK (CHART.JS) YÖNETİMİ ---
+        let chart1, chart2, chart3, reportsChart;
+
+        const createLineChartOptions = (isDark, data) => ({
+            type: 'line',
+            data: {
+                labels: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz'],
+                datasets: [{ data: data, borderColor: '#4f46e5', borderWidth: 3, tension: 0.4, pointRadius: 0, fill: { target: 'origin', above: isDark ? 'rgba(79, 70, 229, 0.2)' : 'rgba(79, 70, 229, 0.1)', } }]
+            },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+        });
+
+        function renderCharts() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if(document.getElementById('chart1')) chart1 = new Chart(document.getElementById('chart1').getContext('2d'), createLineChartOptions(isDark, [12, 19, 13, 15, 12, 18]));
+            if(document.getElementById('chart2')) chart2 = new Chart(document.getElementById('chart2').getContext('2d'), createLineChartOptions(isDark, [8, 11, 15, 12, 14, 10]));
+            if(document.getElementById('chart3')) chart3 = new Chart(document.getElementById('chart3').getContext('2d'), createLineChartOptions(isDark, [22, 18, 16, 25, 20, 28]));
+            if(document.getElementById('reportsChart')) {
+                const reportsCtx = document.getElementById('reportsChart').getContext('2d');
+                reportsChart = new Chart(reportsCtx, {
+                    type: 'bar',
+                    data: { labels: ['Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos'], datasets: [{ label: 'Aylık Bağış Miktarı (₺)', data: [80000, 81000, 56000, 95000, 110000, 240500], backgroundColor: isDark ? 'rgba(79, 70, 229, 0.5)' : 'rgba(79, 70, 229, 0.7)', borderColor: '#4f46e5', borderWidth: 1, borderRadius: 5 }] },
+                    options: { scales: { y: { beginAtZero: true, ticks: { color: isDark ? '#9ca3af' : '#4b5563' } }, x: { ticks: { color: isDark ? '#9ca3af' : '#4b5563' } } } }
+                });
+            }
+        }
+
+        function updateChartsTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            [chart1, chart2, chart3].forEach(chart => { if (chart) { chart.data.datasets[0].fill = createLineChartOptions(isDark, []).data.datasets[0].fill; chart.update(); } });
+            if (reportsChart) {
+                reportsChart.data.datasets[0].backgroundColor = isDark ? 'rgba(79, 70, 229, 0.5)' : 'rgba(79, 70, 229, 0.7)';
+                reportsChart.options.scales.y.ticks.color = isDark ? '#9ca3af' : '#4b5563';
+                reportsChart.options.scales.x.ticks.color = isDark ? '#9ca3af' : '#4b5563';
+                reportsChart.update();
+            }
+        }
+        renderCharts();
+
+        // --- BÖLÜM 4: ETKİLEŞİM FONKSİYONLARI (MODAL, TOAST, DROPDOWN) ---
+        const toast = document.getElementById('toast');
+        const showToast = (message, type = 'success') => {
+            toast.textContent = message;
+            toast.className = '';
+            toast.classList.add(type, 'show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        };
+
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalContainer = document.getElementById('modal-container');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        
+        const openModal = (title, contentHTML) => {
+            modalTitle.innerHTML = title;
+            modalContent.innerHTML = contentHTML;
+            modalOverlay.classList.remove('hidden');
+            modalOverlay.classList.add('flex');
+            setTimeout(() => {
+                modalOverlay.classList.remove('opacity-0');
+                modalContainer.classList.remove('opacity-0', 'scale-95');
+                modalContainer.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        };
+
+        const closeModal = () => {
+            modalContainer.classList.remove('opacity-100', 'scale-100');
+            modalContainer.classList.add('opacity-0', 'scale-95');
+            modalOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                modalOverlay.classList.add('hidden');
+                modalOverlay.classList.remove('flex');
+            }, 300);
+        };
+
+        modalCloseBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+
+        const openConfirmModal = (title, message, onConfirm) => {
+            const content = `<p class="mb-6">${message}</p><div class="flex justify-end gap-3"><button id="confirm-cancel" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-slate-600 hover:bg-gray-300 dark:hover:bg-slate-500">İptal</button><button id="confirm-ok" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600">Evet, Onayla</button></div>`;
+            openModal(title, content);
+            document.getElementById('confirm-cancel').onclick = closeModal;
+            document.getElementById('confirm-ok').onclick = () => { closeModal(); onConfirm(); };
+        };
+
+        const hideAllDropdowns = () => document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
+        
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-menu') && !e.target.closest('.volunteer-actions-btn') && !e.target.closest('#user-menu-button')) {
+                hideAllDropdowns();
+            }
+        });
+        
+        // --- BÖLÜM 5: ORİJİNAL KODDAN GELEN BUTON VE OLAY DİNLEYİCİLERİ ---
+        document.getElementById('add-project-btn').addEventListener('click', () => {
+            const formHTML = `<form id="project-form" class="space-y-4"><div><label class="text-sm">Proje Adı</label><input type="text" required class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"></div><div><label class="text-sm">Proje Kategorisi</label><select class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"><option>Eğitim</option><option>Sağlık</option><option>Sosyal Yardım</option><option>Çevre</option></select></div><div class="grid grid-cols-2 gap-4"><div><label class="text-sm">Hedef Bütçe (₺)</label><input type="number" placeholder="50000" required class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"></div><div><label class="text-sm">Bitiş Tarihi</label><input type="date" required class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"></div></div><div><label class="text-sm">Proje Açıklaması</label><textarea rows="3" class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"></textarea></div><button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700">Projeyi Kaydet</button></form>`;
+            openModal('Yeni Proje Oluştur', formHTML);
+            document.getElementById('project-form').addEventListener('submit', e => { e.preventDefault(); closeModal(); showToast('Proje başarıyla oluşturuldu!'); });
+        });
+
+        document.querySelectorAll('.project-details-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const card = e.target.closest('[data-project-name]');
+                const { projectName, category, target, collected, volunteers } = card.dataset;
+                const percentage = ((collected / target) * 100).toFixed(0);
+                const detailsHTML = `<div class="space-y-4"><p><strong>Kategori:</strong> ${category}</p><div><div class="flex justify-between text-sm mb-1"><span class="dark:text-gray-300">Bağış Durumu</span><span class="font-semibold dark:text-white">${percentage}%</span></div><div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2.5"><div class="bg-indigo-500 h-2.5 rounded-full" style="width: ${percentage}%"></div></div><p class="text-xs text-center mt-1">${Number(collected).toLocaleString()}₺ / ${Number(target).toLocaleString()}₺ toplandı.</p></div><p><strong>Atanan Gönüllü Sayısı:</strong> ${volunteers}</p><p class="text-sm bg-gray-100 dark:bg-slate-700 p-3 rounded-lg">Bu proje, dezavantajlı bölgelerdeki köy okullarına kitap, kırtasiye ve teknolojik ekipman desteği sağlamayı amaçlamaktadır.</p></div>`;
+                openModal(`${projectName} - Proje Detayları`, detailsHTML);
+            });
+        });
+        
+        document.getElementById('add-volunteer-btn').addEventListener('click', () => {
+            const formHTML = `<form id="volunteer-form" class="space-y-4"><div><label class="text-sm font-medium text-gray-600 dark:text-gray-300">İsim Soyisim</label><input type="text" required class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"></div><div class="grid grid-cols-2 gap-4"><div><label class="text-sm font-medium text-gray-600 dark:text-gray-300">E-posta</label><input type="email" required class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"></div><div><label class="text-sm font-medium text-gray-600 dark:text-gray-300">Telefon</label><input type="tel" class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"></div></div><div><label class="text-sm font-medium text-gray-600 dark:text-gray-300">Uzmanlık Alanı / Beceriler</label><input type="text" placeholder="Örn: Öğretmen, Doktor, Yazılım" class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700 border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"></div><div><label class="text-sm font-medium text-gray-600 dark:text-gray-300">Müsaitlik Durumu</label><div class="flex gap-4 mt-2 text-sm"><label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"> Hafta İçi</label><label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"> Hafta Sonu</label><label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"> Proje Bazlı</label></div></div><div class="pt-2"><button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-lg hover:bg-indigo-700">Gönüllüyü Kaydet</button></div></form>`;
+            openModal('Yeni Gönüllü Kaydı', formHTML);
+            document.getElementById('volunteer-form').addEventListener('submit', e => { e.preventDefault(); closeModal(); showToast('Yeni gönüllü başarıyla eklendi!'); });
+        });
+
+        const volunteerDropdown = document.getElementById('volunteer-actions-dropdown');
+        let currentVolunteerRow = null;
+        document.querySelector('#gonulluler table tbody').addEventListener('click', e => {
+            const actionButton = e.target.closest('.volunteer-actions-btn');
+            if (actionButton) {
+                e.stopPropagation();
+                currentVolunteerRow = actionButton.closest('tr');
+                const rect = actionButton.getBoundingClientRect();
+                const containerRect = document.getElementById('app-container').getBoundingClientRect();
+                hideAllDropdowns();
+                volunteerDropdown.style.top = `${rect.bottom - containerRect.top + 5}px`;
+                volunteerDropdown.style.left = `${rect.left - containerRect.left - volunteerDropdown.offsetWidth + rect.width}px`;
+                volunteerDropdown.classList.toggle('show');
+            }
+        });
+
+        volunteerDropdown.addEventListener('click', e => {
+            e.preventDefault();
+            const action = e.target.classList[0];
+            const data = currentVolunteerRow.dataset;
+            hideAllDropdowns();
+            if (action === 'action-view-profile') {
+                const profileHTML = `<div class="space-y-2"><p><strong>E-posta:</strong> ${data.email}</p><p><strong>Telefon:</strong> ${data.phone || 'Belirtilmemiş'}</p><p><strong>Uzmanlık Alanı:</strong> ${data.expertise}</p><p><strong>Katılım Tarihi:</strong> ${data.joindate}</p><p><strong>Durum:</strong> <span class="font-semibold ${data.status === 'Aktif' ? 'text-emerald-500' : 'text-gray-500'}">${data.status}</span></p></div>`;
+                openModal(`Gönüllü Profili: ${data.name}`, profileHTML);
+            } else if (action === 'action-assign-task') {
+                showToast(`${data.name} için görev atama paneli açılıyor...`, 'info');
+            } else if (action === 'action-delete-volunteer') {
+                openConfirmModal('Gönüllüyü Sil', `<b>${data.name}</b> isimli gönüllüyü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`, () => {
+                    currentVolunteerRow.remove();
+                    showToast('Gönüllü başarıyla silindi.', 'error');
+                });
+            }
+        });
+        
+        document.getElementById('add-user-btn').addEventListener('click', () => {
+              openModal('Yeni Kullanıcı Ekle', `<form id="user-form" class="space-y-4"><div><label class="text-sm">İsim Soyisim</label><input type="text" required class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700"></div><div><label class="text-sm">E-posta</label><input type="email" required class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700"></div><div><label class="text-sm">Yetki Grubu</label><select class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700"><option>Admin</option><option>Proje Yöneticisi</option><option>İçerik Editörü</option></select></div><button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700">Kullanıcıyı Kaydet</button></form>`);
+              document.getElementById('user-form').addEventListener('submit', e => { e.preventDefault(); closeModal(); showToast('Kullanıcı başarıyla eklendi!'); });
+        });
+        document.getElementById('add-role-btn').addEventListener('click', () => {
+              openModal('Yeni Yetki Grubu Ekle', `<form id="role-form" class="space-y-4"><div><label class="text-sm">Grup Adı</label><input type="text" required class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700"></div><div><label class="text-sm">İzinler</label><div class="mt-2 space-y-2"><label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded mr-2"> Kullanıcıları Yönet</label><label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded mr-2"> Projeleri Yönet</label><label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded mr-2"> Raporları Görüntüle</label></div></div><button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700">Grubu Kaydet</button></form>`);
+              document.getElementById('role-form').addEventListener('submit', e => { e.preventDefault(); closeModal(); showToast('Yetki grubu oluşturuldu!'); });
+        });
+        document.getElementById('add-region-btn').addEventListener('click', () => {
+              openModal('Yeni Bölge Ekle', `<form id="region-form" class="space-y-4"><div><label class="text-sm">Bölge Adı</label><input type="text" required class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700"></div><div><label class="text-sm">İl / İlçe</label><input type="text" class="w-full p-2 mt-1 rounded-lg bg-gray-100 dark:bg-slate-700"></div><button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700">Bölgeyi Kaydet</button></form>`);
+              document.getElementById('region-form').addEventListener('submit', e => { e.preventDefault(); closeModal(); showToast('Bölge başarıyla eklendi!'); });
+        });
+        
+        document.getElementById('report-generator-form').addEventListener('submit', e => { e.preventDefault(); showToast('Rapor oluşturuluyor ve indirme başlatılacak...', 'info'); });
+        
+        document.getElementById('notifications-btn').addEventListener('click', () => {
+            const notificationsHTML = `<ul class="space-y-2"><li class="p-3 rounded-lg bg-indigo-50 dark:bg-slate-700/50"><strong>Yeni Gönüllü Başvurusu:</strong> Mehmet Öztürk, öğretmenlik için başvurdu.</li><li class="p-3"><strong>Bağış Alındı:</strong> Ahmet Yılmaz, Eğitim Projesi için 650₺ bağışta bulundu.</li><li class="p-3"><strong>Proje Raporu Hazır:</strong> 'Köy Okullarına Destek' projesinin aylık raporu oluşturuldu.</li></ul>`;
+            openModal('Bildirimler', notificationsHTML);
+        });
+
+        const profileDropdown = document.getElementById('profile-dropdown');
+        document.getElementById('user-menu-button').addEventListener('click', (e) => { e.stopPropagation(); hideAllDropdowns(); profileDropdown.classList.toggle('show'); });
+    });
+    </script>
+</body>
+</html>

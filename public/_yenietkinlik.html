@@ -1,0 +1,122 @@
+<section class="p-6 h-full">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800">Yeni Etkinlik Oluştur</h1>
+        <p class="text-gray-500 mt-1">Vakfınız için yeni bir seminer, atölye veya faaliyet planlayın.</p>
+    </div>
+
+    <form id="yeni-etkinlik-form" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 space-y-5">
+            <div>
+                <label for="etkinlik-adi" class="block text-sm font-semibold text-gray-700">Etkinlik Adı</label>
+                <input type="text" name="etkinlik-adi" required placeholder="Örn: Gönüllü Tanışma Kahvaltısı" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+
+            <div>
+                <label for="etkinlik-aciklama" class="block text-sm font-semibold text-gray-700">Açıklama</label>
+                <textarea name="etkinlik-aciklama" rows="6" placeholder="Etkinliğin amacı, içeriği ve hedef kitlesi hakkında detaylı bilgi verin." class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-green-500 focus:border-green-500"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="baslangic-tarihi" class="block text-sm font-semibold text-gray-700">Başlangıç Tarihi ve Saati</label>
+                    <input type="datetime-local" name="baslangic-tarihi" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                </div>
+                <div>
+                    <label for="bitis-tarihi" class="block text-sm font-semibold text-gray-700">Bitiş Tarihi ve Saati</label>
+                    <input type="datetime-local" name="bitis-tarihi" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div>
+                    <label for="etkinlik-konum" class="block text-sm font-semibold text-gray-700">Konum</label>
+                    <input type="text" name="etkinlik-konum" placeholder="Örn: Vakıf Merkezi veya Online/Zoom" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                </div>
+                <div>
+                    <label for="etkinlik-kontenjan" class="block text-sm font-semibold text-gray-700">Kontenjan</label>
+                    <input type="number" name="etkinlik-kontenjan" value="0" placeholder="0 = Sınırsız" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-slate-700 mb-4">Yayınlama</h3>
+                <div>
+                    <label for="etkinlik-turu" class="block text-sm font-semibold text-gray-700">Etkinlik Türü</label>
+                    <select name="etkinlik-turu" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        <option>Seminer</option><option>Atölye</option><option>Kamp</option><option>Sosyal Faaliyet</option>
+                    </select>
+                </div>
+                <div class="mt-4">
+                    <label for="etkinlik-durumu" class="block text-sm font-semibold text-gray-700">Durum</label>
+                    <select name="etkinlik-durumu" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        <option>Taslak</option><option>Yayınlandı</option>
+                    </select>
+                </div>
+                <div class="mt-6 flex flex-col gap-2">
+                     <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-sm">
+                        <i class="fas fa-check mr-2"></i>Etkinliği Yayınla
+                    </button>
+                    <button type="button" class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Taslak Olarak Kaydet</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-slate-700 mb-4">Etkinlik Afişi</h3>
+                <div id="image-upload-box" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div class="space-y-1 text-center">
+                        <img id="image-preview" src="" alt="Afiş Önizleme" class="hidden mx-auto h-24 w-auto mb-4 rounded">
+                        <i id="image-icon" class="fas fa-image fa-2x text-gray-400"></i>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="etkinlik-gorseli" class="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none">
+                                <span>Bir dosya yükleyin</span>
+                                <input id="etkinlik-gorseli" name="etkinlik-gorseli" type="file" class="sr-only" accept="image/*">
+                            </label>
+                            <p class="pl-1">veya sürükleyip bırakın</p>
+                        </div>
+                        <p class="text-xs text-gray-500">PNG, JPG, GIF (En fazla 10MB)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+
+<script>
+   function  initYeniEtkinlik() {
+    const fileInput = document.getElementById('etkinlik-gorseli');
+    const imagePreview = document.getElementById('image-preview');
+    const imageIcon = document.getElementById('image-icon');
+    const form = document.getElementById('yeni-etkinlik-form');
+
+    // --- Resim önizleme ---
+    function handleImagePreview() {
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imagePreview.src = event.target.result;
+                imagePreview.classList.remove('hidden');
+                imageIcon.classList.add('hidden');
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    fileInput.addEventListener('change', handleImagePreview);
+
+    // --- Form submit ---
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const etkinlikVerileri = Object.fromEntries(formData.entries());
+        console.log("Kaydedilecek Etkinlik Verileri:", etkinlikVerileri);
+        alert(`"${etkinlikVerileri['etkinlik-adi']}" adlı etkinlik yayınlanıyor!`);
+        // İsteğe bağlı: form.reset();
+    }
+
+    form.addEventListener('submit', handleFormSubmit);
+}
+</script>

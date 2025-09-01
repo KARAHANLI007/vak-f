@@ -1,0 +1,119 @@
+<section class="p-6 h-full flex flex-col">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold">Kullanıcı Yönetimi</h1>
+        <button id="open-kullanici-panel-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-sm flex items-center">
+            <i class="fas fa-plus mr-2"></i>Yeni Kullanıcı Ekle
+        </button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 flex-1 flex flex-col">
+        <div class="flex-1 overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="p-3 text-sm font-semibold text-gray-600">Ad Soyad</th>
+                        <th class="p-3 text-sm font-semibold text-gray-600">E-posta</th>
+                        <th class="p-3 text-sm font-semibold text-gray-600">Rol</th>
+                        <th class="p-3 text-sm font-semibold text-gray-600">Durum</th>
+                        <th class="p-3 text-sm font-semibold text-gray-600 text-right">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 flex items-center gap-3">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" class="w-10 h-10 rounded-full object-cover">
+                            <span class="font-bold">Ahmet Yılmaz</span>
+                        </td>
+                        <td class="p-3 text-sm text-gray-600">ahmet.yilmaz@genchareket.org</td>
+                        <td class="p-3 text-sm text-gray-600">Admin</td>
+                        <td class="p-3"><span class="bg-green-100 text-green-700 rounded-full px-3 py-1 text-xs font-semibold">Aktif</span></td>
+                        <td class="p-3 text-right"><button class="text-gray-500 hover:text-green-600 p-2"><i class="fas fa-pencil-alt"></i></button><button class="text-gray-500 hover:text-red-600 p-2"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 flex items-center gap-3">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" class="w-10 h-10 rounded-full object-cover">
+                            <span class="font-bold">Elif Kaya</span>
+                        </td>
+                        <td class="p-3 text-sm text-gray-600">elif.kaya@genchareket.org</td>
+                        <td class="p-3 text-sm text-gray-600">Editör</td>
+                        <td class="p-3"><span class="bg-gray-200 text-gray-600 rounded-full px-3 py-1 text-xs font-semibold">Pasif</span></td>
+                        <td class="p-3 text-right"><button class="text-gray-500 hover:text-green-600 p-2"><i class="fas fa-pencil-alt"></i></button><button class="text-gray-500 hover:text-red-600 p-2"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<div id="kullanici-panel-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden flex items-center justify-center p-4">
+
+    <div id="kullanici-panel" class="w-full max-w-lg h-auto bg-white rounded-xl shadow-xl z-50 flex flex-col transition-all duration-300 ease-in-out opacity-0 scale-95">
+        <div class="flex justify-between items-center p-5 border-b">
+            <h2 id="kullanici-panel-title" class="text-xl font-semibold text-slate-700">Yeni Kullanıcı Ekle</h2>
+            <button class="close-kullanici-panel-btn text-gray-400 hover:text-gray-600"><i class="fas fa-times fa-lg"></i></button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1">
+            <form id="kullanici-form" class="space-y-4">
+                <div><label for="kullanici-adi" class="block text-sm font-medium text-gray-700">Ad Soyad</label><input type="text" name="kullanici-adi" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                <div><label for="kullanici-email" class="block text-sm font-medium text-gray-700">E-posta Adresi</label><input type="email" name="kullanici-email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label for="kullanici-rol" class="block text-sm font-medium text-gray-700">Kullanıcı Rolü</label><select name="kullanici-rol" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"><option>Editör</option><option>Admin</option></select></div>
+                    <div><label for="kullanici-durum" class="block text-sm font-medium text-gray-700">Durum</label><select name="kullanici-durum" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"><option>Aktif</option><option>Pasif</option></select></div>
+                </div>
+                <hr class="my-4">
+                <div><label for="kullanici-sifre" class="block text-sm font-medium text-gray-700">Şifre</label><input type="password" name="kullanici-sifre" placeholder="Değişmeyecekse boş bırakın" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+            </form>
+        </div>
+        <div class="flex justify-end items-center gap-3 p-5 border-t bg-gray-50">
+            <button type="button" class="close-kullanici-panel-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+            <button type="submit" form="kullanici-form" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Kaydet</button>
+        </div>
+    </div>
+    
+</div>
+<script>
+   function initKullaniciYonetimi() {
+     const panel = document.getElementById('kullanici-panel');
+     const overlay = document.getElementById('kullanici-panel-overlay');
+     const openBtn = document.getElementById('open-kullanici-panel-btn');
+     const closeBtns = document.querySelectorAll('.close-kullanici-panel-btn');
+     const form = document.getElementById('kullanici-form');
+
+     const openPanel = () => {
+         overlay.classList.remove('hidden');
+         // Gecikme, CSS geçişinin düzgün çalışması için ekleniyor.
+         setTimeout(() => {
+             panel.classList.remove('opacity-0', 'scale-95');
+         }, 50); 
+     };
+     
+     const closePanel = () => {
+         panel.classList.add('opacity-0', 'scale-95');
+         // Animasyonun bitmesini bekleyip overlay'i gizliyoruz.
+         setTimeout(() => {
+            overlay.classList.add('hidden');
+            if(form) form.reset();
+         }, 300); // Süre, CSS'deki duration ile aynı olmalı.
+     };
+
+     if(openBtn) openBtn.addEventListener('click', openPanel);
+     closeBtns.forEach(btn => btn.addEventListener('click', closePanel));
+     if(overlay) overlay.addEventListener('click', (e) => {
+        // Sadece overlay'in kendisine tıklandığında kapanmasını sağlar.
+        if (e.target === overlay) {
+            closePanel();
+        }
+     });
+
+     if(form) form.addEventListener('submit', (e) => {
+         e.preventDefault();
+         const formData = new FormData(form);
+         const kullaniciVerileri = Object.fromEntries(formData.entries());
+         console.log("Kaydedilecek Kullanıcı Verileri:", kullaniciVerileri);
+         alert(`"${kullaniciVerileri['kullanici-adi']}" adlı kullanıcı kaydediliyor!`);
+         closePanel();
+     });
+}
+
+ initKullaniciYonetimi(); 
+</script>

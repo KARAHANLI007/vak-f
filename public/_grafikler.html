@@ -1,0 +1,132 @@
+<section class="p-6 h-full space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Grafikler ve Raporlar</h1>
+            <p class="text-gray-500 mt-1">Vakıf faaliyetlerinin genel performansını görsel olarak analiz edin.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <input type="text" id="date-range-picker" placeholder="Tarih Aralığı Seçin" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-sm">
+                <i class="fas fa-filter mr-2"></i>Filtrele
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <div class="bg-white p-6 rounded-xl shadow-sm transition-all hover:shadow-lg">
+            <h2 class="text-lg font-semibold text-slate-700 mb-4">Aylara Göre Yeni Üye & Gönüllü Sayısı</h2>
+            <div class="h-64">
+                <canvas id="uyeArtisGrafigi"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm transition-all hover:shadow-lg">
+            <h2 class="text-lg font-semibold text-slate-700 mb-4">Aylık Toplam Bağış Miktarları (₺)</h2>
+            <div class="h-64">
+                <canvas id="aylikBagisGrafigi"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm transition-all hover:shadow-lg">
+            <h2 class="text-lg font-semibold text-slate-700 mb-4">Etkinlik Türüne Göre Katılımcı Dağılımı</h2>
+            <div class="h-64 flex items-center justify-center">
+                <canvas id="etkinlikKatilimGrafigi"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm transition-all hover:shadow-lg">
+            <h2 class="text-lg font-semibold text-slate-700 mb-4">Gönüllü Cinsiyet Dağılımı</h2>
+            <div class="h-64 flex items-center justify-center">
+                <canvas id="cinsiyetDagilimGrafigi"></canvas>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+function initGrafikler() {
+    // Date Picker Initialization
+    flatpickr("#date-range-picker", {
+        mode: "range",
+        dateFormat: "d-m-Y",
+    });
+
+    const ayIsimleri = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'];
+
+    // Chart 1
+    const uyeArtisCtx = document.getElementById('uyeArtisGrafigi');
+    if (uyeArtisCtx) {
+        new Chart(uyeArtisCtx, {
+            type: 'bar',
+            data: {
+                labels: ayIsimleri,
+                datasets: [
+                    { label: 'Yeni Üyeler', data: [12, 19, 15, 25, 22, 30],
+                      backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                      borderColor: 'rgba(22, 163, 74, 1)', borderWidth: 1 },
+                    { label: 'Yeni Gönüllüler', data: [8, 15, 10, 18, 16, 24],
+                      backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                      borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 1 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false,
+                       scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    // Chart 2
+    const aylikBagisCtx = document.getElementById('aylikBagisGrafigi');
+    if (aylikBagisCtx) {
+        new Chart(aylikBagisCtx, {
+            type: 'line',
+            data: {
+                labels: ayIsimleri,
+                datasets: [{
+                    label: 'Bağış Miktarı (₺)',
+                    data: [1500, 2200, 1800, 3100, 2800, 4000],
+                    fill: true,
+                    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                    borderColor: 'rgba(22, 163, 74, 1)',
+                    tension: 0.3
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false,
+                       scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    // Chart 3
+    const etkinlikKatilimCtx = document.getElementById('etkinlikKatilimGrafigi');
+    if (etkinlikKatilimCtx) {
+        new Chart(etkinlikKatilimCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Seminerler', 'Kermesler', 'Konferanslar', 'Atölyeler'],
+                datasets: [{
+                    data: [300, 150, 100, 220],
+                    backgroundColor: ['#3B82F6', '#22C55E', '#F97316', '#6B7280']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // Chart 4
+    const cinsiyetDagilimCtx = document.getElementById('cinsiyetDagilimGrafigi');
+    if (cinsiyetDagilimCtx) {
+        new Chart(cinsiyetDagilimCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Kadın', 'Erkek',],
+                datasets: [{
+                    data: [65, 45, 5],
+                    backgroundColor: ['#EC4899', '#3B82F6', '#9CA3AF']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+}
+</script>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teşkilat Yönetimi - Sade Tasarım</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #16a34a; --primary-green-hover: #15803d; --background-light: #f8fafc;
+            --container-bg: #ffffff; --border-color: #e2e8f0; --text-dark: #1e293b;
+            --text-light: #64748b; --danger-red: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--background-light); color: var(--text-dark); padding: 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; background-color: var(--container-bg); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .header h1 { font-size: 1.5rem; }
+        .header p { color: var(--text-light); }
+        .add-button { background-color: var(--primary-green); color: white; border: none; border-radius: 6px; padding: 0.75rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s; }
+        .add-button:hover { background-color: var(--primary-green-hover); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { text-align: left; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .data-table thead th { background-color: var(--background-light); font-size: 0.8rem; text-transform: uppercase; color: var(--text-light); }
+        .region-row { cursor: pointer; transition: background-color 0.2s; }
+        .region-row:hover { background-color: #f8fafc; }
+        .region-row .chevron { transition: transform 0.2s; }
+        .region-row.open .chevron { transform: rotate(90deg); }
+        .region-row .region-name { font-weight: 600; font-size: 1rem; }
+        .neighborhoods-container { display: none; }
+        .neighborhoods-container td { padding: 0; }
+        .neighborhoods-content { padding: 1rem 1.5rem 1.5rem 4rem; }
+        .neighborhoods-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .neighborhoods-header h4 { color: var(--text-light); }
+        .neighborhoods-header .add-button-small { color: var(--primary-green); font-weight: 600; background: none; border: none; cursor: pointer; }
+        .neighborhoods-list li { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
+        .neighborhoods-list li:last-child { border-bottom: none; }
+        .actions button { background: none; border: none; cursor: pointer; color: var(--text-light); font-size: 0.9rem; margin-left: 1rem; }
+        .actions button:hover { color: var(--text-dark); }
+        .actions button.delete:hover { color: var(--danger-red); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 8px; width: 500px; max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .modal-header h2 { font-size: 1.25rem; }
+        .modal-body { padding: 1.5rem; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; background-color: var(--background-light); border-top: 1px solid var(--border-color); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;}
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .form-group input { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; }
+        .modal-button { border: none; border-radius: 6px; padding: 0.6rem 1.2rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        .btn-secondary { background-color: white; border: 1px solid var(--border-color); }
+        .btn-primary { background-color: var(--primary-green); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div><h1>Teşkilat Yönetimi</h1><p>Bölgeleri ve mahalleleri yönetin.</p></div>
+            <button class="add-button" onclick="openModal('add-region')"><i class="fa-solid fa-plus"></i><span>Yeni Bölge Ekle</span></button>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr><th style="width: 50px;"></th><th>Bölge Adı</th><th>Toplam Üye</th><th>Eylemler</th></tr>
+            </thead>
+            <tbody>
+                <tr class="region-row" onclick="toggleNeighborhoods(1)">
+                    <td><i class="fa-solid fa-chevron-right chevron"></i></td>
+                    <td><div class="region-name">Marmara Bölgesi</div><small class="text-light">3 Mahalle</small></td>
+                    <td>451</td>
+                    <td class="actions">
+                        <button onclick="event.stopPropagation(); openModal('edit-region', 1, 'Marmara Bölgesi')">Düzenle</button>
+                        <button class="delete" onclick="event.stopPropagation(); alert('Silme işlemi yapılacak.')">Sil</button>
+                    </td>
+                </tr>
+                <tr class="neighborhoods-container" id="neighborhoods-for-1">
+                    <td colspan="4"><div class="neighborhoods-content"><div class="neighborhoods-header"><h4>Mahalleler</h4><button class="add-button-small" onclick="openModal('add-neighborhood', null, '', null, 1)"><i class="fas fa-plus"></i> Yeni Mahalle Ekle</button></div><ul class="neighborhoods-list"><li><span>Fatih Mahallesi</span> <span>152 Üye</span></li><li><span>Yavuz Selim Mahallesi</span> <span>89 Üye</span></li><li><span>Mimar Sinan Mahallesi</span> <span>210 Üye</span></li></ul></div></td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr class="region-row" onclick="toggleNeighborhoods(2)">
+                    <td><i class="fa-solid fa-chevron-right chevron"></i></td>
+                    <td><div class="region-name">İç Anadolu Bölgesi</div><small class="text-light">2 Mahalle</small></td>
+                    <td>295</td>
+                    <td class="actions">
+                        <button onclick="event.stopPropagation(); openModal('edit-region', 2, 'İç Anadolu Bölgesi')">Düzenle</button>
+                        <button class="delete" onclick="event.stopPropagation(); alert('Silme işlemi yapılacak.')">Sil</button>
+                    </td>
+                </tr>
+                <tr class="neighborhoods-container" id="neighborhoods-for-2">
+                    <td colspan="4"><div class="neighborhoods-content"><div class="neighborhoods-header"><h4>Mahalleler</h4><button class="add-button-small" onclick="openModal('add-neighborhood', null, '', null, 2)"><i class="fas fa-plus"></i> Yeni Mahalle Ekle</button></div><ul class="neighborhoods-list"><li><span>Mevlana Mahallesi</span> <span>175 Üye</span></li><li><span>Selçuklu Mahallesi</span> <span>120 Üye</span></li></ul></div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal-overlay" id="formModal">
+        <div class="modal-content">
+            <form onsubmit="event.preventDefault(); saveForm();">
+                <div class="modal-header">
+                    <h2 id="modalTitle"></h2>
+                    <button type="button" class="add-button-small" style="font-size: 1.5rem;" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editId"><input type="hidden" id="parentId">
+                    <div class="form-group">
+                        <label for="nameInput" id="nameLabel"></label>
+                        <input type="text" id="nameInput" required>
+                    </div>
+                    <div class="form-group" id="membersField">
+                        <label for="membersInput">Üye Sayısı</label>
+                        <input type="number" id="membersInput" value="0" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="modal-button btn-secondary" onclick="closeModal()">İptal</button>
+                    <button type="submit" class="modal-button btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function initBolgeYonetimi() {
+        const modal = document.getElementById('formModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const nameLabel = document.getElementById('nameLabel');
+        const nameInput = document.getElementById('nameInput');
+        const membersField = document.getElementById('membersField');
+        const membersInput = document.getElementById('membersInput');
+        const editIdInput = document.getElementById('editId');
+        const parentIdInput = document.getElementById('parentId');
+
+        // DEĞİŞİKLİK 1: Fonksiyonları 'window' nesnesine atıyoruz.
+        // Böylece HTML içindeki onclick özellikleri bu fonksiyonlara erişebilir.
+        window.toggleNeighborhoods = function(regionId) {
+            const row = document.querySelector(`#neighborhoods-for-${regionId}`);
+            const regionRow = row.previousElementSibling;
+            if (row) {
+                const isHidden = row.style.display === 'none' || !row.style.display;
+                row.style.display = isHidden ? 'table-row' : 'none';
+                regionRow.classList.toggle('open', isHidden);
+            }
+        }
+
+        window.openModal = function(action, id = null, name = '', members = 0, parentId = null) {
+            modal.querySelector('form').reset();
+            editIdInput.value = id;
+            parentIdInput.value = parentId;
+
+            if (action === 'add-region') {
+                modalTitle.textContent = 'Yeni Bölge Ekle';
+                nameLabel.textContent = 'Bölge Adı';
+                nameInput.placeholder = 'Örn: Ege Bölgesi';
+                membersField.style.display = 'none';
+            } 
+            else if (action === 'edit-region') {
+                modalTitle.textContent = 'Bölgeyi Düzenle';
+                nameLabel.textContent = 'Bölge Adı';
+                nameInput.value = name;
+                membersField.style.display = 'none';
+            }
+            else if (action === 'add-neighborhood') {
+                modalTitle.textContent = 'Yeni Mahalle Ekle';
+                nameLabel.textContent = 'Mahalle Adı';
+                nameInput.placeholder = 'Örn: Atatürk Mahallesi';
+                membersField.style.display = 'block';
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        window.closeModal = function() {
+            modal.style.display = 'none';
+        }
+
+        window.saveForm = function() {
+            const name = nameInput.value;
+            const members = membersInput.value;
+            const editId = editIdInput.value;
+            const parentId = parentIdInput.value;
+            
+            if (parentId) {
+                alert(`Mahalle Kaydedildi:\nAd: ${name}\nÜye Sayısı: ${members}\nBölge ID: ${parentId}`);
+            } else {
+                alert(`Bölge Kaydedildi:\nAd: ${name}`);
+            }
+
+            closeModal();
+        }
+    }
+    initBolgeYonetimi();
+    </script>
+</body>
+</html>

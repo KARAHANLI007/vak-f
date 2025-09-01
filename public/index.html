@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Genç Hareket</title>
+
+  <!-- Libs -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    html { font-size: 13px; }
+    html, body { height: 100vh; width: 100vw; margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(to top right, #f0f4f8, #e2e8f0, #d1d5db); color: #1E293B; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background-color: #16A34A; border-radius: 3px; }
+
+    body.dark { background: linear-gradient(to top right, #1f2937, #374151, #4b5563); color: #d1d5db; }
+    body.dark #app-container, body.dark main>header, body.dark .page-content-bg { background-color: #1f2937 !important; }
+    body.dark aside#sidebar { background-color: #111827 !important; }
+
+    /* Ayarlar paneli */
+    .offcanvas-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:1040; opacity:0; transition: opacity .3s; pointer-events:none; }
+    .offcanvas-overlay.active { opacity:1; pointer-events:auto; }
+    #ayarlar-panel { position:fixed; top:0; right:-550px; width:550px; max-width:90%; height:100%; background:#f7f9fc; box-shadow:-5px 0 15px rgba(0,0,0,.1); z-index:1050; transition:right .4s cubic-bezier(.25,.46,.45,.94); display:flex; flex-direction:column; }
+    #ayarlar-panel.active { right:0; }
+    body.dark #ayarlar-panel { background:#111827; }
+    .panel-header { display:flex; justify-content:space-between; align-items:center; padding:1.25rem 1.5rem; background:white; border-bottom:1px solid #e2e8f0; }
+    body.dark .panel-header { background:#1f2937; border-bottom-color:#374151; }
+    .panel-title { font-size:1.25rem; font-weight:600; }
+    #ayarlar-panel-close-btn { font-size:2rem; line-height:1; background:none; border:none; cursor:pointer; }
+    .panel-body { padding:1.5rem; overflow-y:auto; flex-grow:1; }
+    #ayarlar-panel .form-group { margin-bottom:1.25rem; }
+    #ayarlar-panel .form-group label { display:block; font-weight:500; margin-bottom:.5rem; font-size:.9rem; }
+    .panel-footer { padding:1rem 1.5rem; background:white; border-top:1px solid #e2e8f0; text-align:right; }
+    body.dark .panel-footer { background:#1f2937; border-top-color:#374151; }
+
+    /* Header menu */
+    .header-menu { display:flex; gap:1rem; background:white; padding:0.5rem 1rem; border-bottom:1px solid #e2e8f0; border-radius:15px; margin-bottom:8px; }
+    .header-menu div { cursor:pointer; padding:0.5rem 0.75rem; font-weight:500; border-radius:0.5rem; transition:all .2s; }
+    .header-menu div:hover, .header-menu div.active { background:#16A34A; color:white; }
+
+    /* Sidebar menu */
+    .nav-link { display:flex; align-items:center; gap:0.75rem; padding:0.5rem 1rem; border-radius:0.5rem; cursor:pointer; font-weight:500; transition:all .2s; }
+    .nav-link:hover { background:#ecfdf5; }
+    .nav-link.active { background:#16A34A; color:white; }
+    .submenu { padding-left:1.5rem; display:flex; flex-direction:column; gap:0.25rem; }
+  </style>
+</head>
+
+<body class="flex items-center justify-center p-2">
+  <div id="app-container" class="flex flex-row gap-4 p-4 rounded-[20px] shadow bg-white w-full h-full max-h-[95%] max-w-[95%] overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="flex flex-col bg-[#eef2f5] rounded-[15px] w-64 flex-shrink-0 p-4 transition-all duration-300 ease-in-out">
+      <div class="logo-container mb-6 px-2">
+        <a href="#"><img src="footerLogoDikey.png" alt="Logo" class="w-40 h-auto"></a>
+      </div>
+      <ul class="main-menu flex flex-col gap-2" id="sidebar-menus"></ul>
+
+      <div class="mt-auto pt-4 border-t border-gray-300 dark:border-gray-700">
+        <a href="#" id="logout-btn" class="flex items-center gap-3 p-3 rounded-lg cursor-pointer text-red-500 font-semibold text-sm transition-all hover:bg-red-100 dark:hover:bg-red-900/30">
+          <i class="fas fa-sign-out-alt w-5 text-center"></i><span class="menu-text">Çıkış Yap</span>
+        </a>
+      </div>
+      <button id="sidebar-toggle" class="w-full p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 mt-2 transition-colors">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </aside>
+
+    <!-- MAIN -->
+    <main id="main-content" class="flex-1 flex flex-col gap-4 overflow-auto">
+
+      <!-- Yeşil banner -->
+      <section class="bg-[#16A34A] rounded-[15px] flex items-center justify-between p-3 gap-4 max-w-full">
+        <div class="flex flex-col gap-1">
+          <div class="bg-black/20 text-white text-xs rounded-lg inline-flex items-center gap-2 px-2 py-1 w-fit">
+            <i class="fas fa-calendar-alt"></i><span id="bannerDateTime">Tarih ve Saat</span>
+          </div>
+          <h2 class="text-white text-lg font-semibold leading-tight truncate">Hoş Geldiniz!</h2>
+          <p class="text-white text-sm truncate opacity-90">Genç Hareket Yönetim Paneli</p>
+        </div>
+
+        <div class="flex items-center gap-3 bg-white/10 p-2 rounded-full">
+          <button id="fullscreen-btn" class="w-8 h-8 flex items-center justify-center text-white/80 hover:bg-white/20 rounded-full transition-colors"><i class="fa-solid fa-arrows-up-down-left-right"></i></button>
+
+          <div class="relative">
+            <button id="notifications-btn" class="relative w-8 h-8 flex items-center justify-center text-white/80 hover:bg-white/20 rounded-full transition-colors">
+              <i class="fas fa-bell"></i>
+              <span class="absolute top-1 right-1 block w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <div id="notifications-dropdown" class="hidden absolute top-full right-0 mt-2 w-72 bg-white rounded-lg shadow-xl text-black z-10">
+              <div class="p-3 border-b font-semibold">Bildirimler</div>
+              <ul class="py-1">
+                <li class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm border-b">Yeni bir randevu talebi alındı.</li>
+              </ul>
+              <div class="p-2 text-center border-t"><a href="#" class="text-sm text-green-600 font-semibold">Tümünü Gör</a></div>
+            </div>
+          </div>
+
+          <button id="theme-toggle" class="w-8 h-8 flex items-center justify-center text-white/80 hover:bg-white/20 rounded-full transition-colors">
+            <i id="theme-icon" class="fas fa-moon"></i>
+          </button>
+
+          <div id="user-menu-button" class="relative flex items-center gap-2 cursor-pointer">
+            <div class="w-10 h-10 rounded-full bg-gray-200"></div>
+            <div class="flex flex-col pr-3">
+              <span class="font-semibold text-white text-sm">test@example.com</span>
+              <span class="text-xs text-cyan-200">Çevrimiçi</span>
+            </div>
+            <i class="fas fa-chevron-down text-white/70 text-xs"></i>
+            <div id="user-menu-dropdown" class="hidden absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl text-black z-20">
+              <ul class="py-1 text-sm text-gray-700">
+                <li><a href="#" id="ayarlar-btn" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100"><i class="fas fa-cog w-4"></i> Ayarlar</a></li>
+                <li><a href="#" id="logout-link" class="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50"><i class="fas fa-sign-out-alt w-4"></i> Çıkış Yap</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dinamik Header Menüsü -->
+      <div class="header-menu" id="header-menu"></div>
+
+      <!-- İçerik Alanı -->
+      <div id="content-area" class="flex-1 overflow-y-auto p-1">
+        <div id="page-content"></div>
+      </div>
+<footer class="flex items-center justify-between p-4 text-sm text-gray-500 border-t bg-white border-gray-200 dark:border-gray-700">
+    <div>
+        <a href="/gizlilik-politikasi.html" target="_blank" class="hover:underline text-green-600">Gizlilik Politikası</a>
+    </div>
+
+    <div>
+        &copy; 2025 Avicenna Teknoloji. Tüm Hakları Saklıdır.
+    </div>
+</footer>
+    </main>
+  </div>
+
+  <!-- Ayarlar Paneli -->
+  <div class="offcanvas-overlay" id="ayarlar-panel-overlay"></div>
+  <div id="ayarlar-panel">
+    <div class="panel-header">
+      <h3 class="panel-title">Ayarlar</h3>
+      <button id="ayarlar-panel-close-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors">&times;</button>
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label for="site-title">Site Başlığı</label>
+        <input type="text" id="site-title" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600" value="Genç Hareket Yönetim Paneli">
+      </div>
+      <p class="text-sm text-gray-500 mt-4">Panel ayarları burada yer alacaktır.</p>
+    </div>
+    <div class="panel-footer">
+      <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 mr-2" onclick="document.getElementById('ayarlar-panel-close-btn').click()">Vazgeç</button>
+      <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Değişiklikleri Kaydet</button>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+// Bu kodun tamamını kopyalayıp index.html'deki mevcut <script> bloğunun yerine yapıştırın.
+document.addEventListener('DOMContentLoaded', () => {
+
+    const headerMenu = document.getElementById('header-menu');
+    const sidebarMenus = document.getElementById('sidebar-menus');
+    const pageContent = document.getElementById('page-content');
+
+    // Menü verisi
+    const menuData = {
+        'anasayfa': { 
+            title: 'Ana Sayfa', 
+            icon: 'fas fa-tachometer-alt',
+            submenus: [ 
+                { name: 'Dashboard', pageKey: 'anasayfa', icon: 'fas fa-chart-line' },
+                { name: 'Grafikler', pageKey: 'grafikler', icon: 'fas fa-chart-pie' } 
+            ] 
+        },
+        'uyeler': { 
+            title: 'Üye ve Gönüllü Yönetimi', 
+            icon: 'fas fa-users', 
+            submenus: [ 
+                { name: 'Üyeler', pageKey: 'uyelistesi', icon: 'fas fa-user-friends' },
+                { name: 'Gönüllüler', pageKey: 'gonullulistesi', icon: 'fas fa-hands-helping' } 
+            ] 
+        },
+        'etkinlikler': { 
+            title: 'Etkinlik Yönetimi', 
+            icon: 'fas fa-calendar-check', 
+            submenus: [ 
+                { name: 'Etkinlik Listesi', pageKey: 'etkinliklistesi', icon: 'fas fa-list-ul' },
+                { name: 'Etkinlik Takvimi', pageKey: 'etkinliktakvimi', icon: 'fas fa-calendar-alt' },
+                { name: 'Yeni Etkinlik Oluştur', pageKey: 'yenietkinlik', icon: 'fas fa-calendar-plus' }
+            ] 
+        },
+        'projeler': { 
+            title: 'Proje ve Faaliyet Yönetimi', 
+            icon: 'fas fa-tasks', 
+            submenus: [ 
+                { name: 'Proje Listesi', pageKey: 'projelistesi', icon: 'fas fa-folder-open' },
+                { name: 'Yeni Proje Oluştur', pageKey: 'yeniproje', icon: 'fas fa-folder-plus' },
+                { name: 'Faaliyet Raporları', pageKey: 'faaliyerraporları', icon: 'fas fa-chart-bar' }
+
+            ] 
+        },
+        'finans': { 
+            title: 'Finans Yönetimi', 
+            icon: 'fas fa-wallet', 
+            submenus: [ 
+                { name: 'Bağış Takibi', pageKey: 'bagistakibi', icon: 'fas fa-hand-holding-heart' },
+                { name: 'Gider Takibi', pageKey: 'gidertakibi', icon: 'fas fa-file-invoice-dollar' },
+                { name: 'Burs Yönetimi', pageKey: 'bursyonetimi', icon: 'fas fa-graduation-cap' },
+                { name: 'Finansal Raporlar', pageKey: 'finansalraporlar', icon: 'fas fa-file-alt' }
+            ] 
+        },
+          'Tanımlamalar': { 
+            title: 'Tanımlamalar', 
+            icon: 'fas fa-tachometer-alt',
+            submenus: [ 
+              { name: 'Kullanıcı Tanımları', pageKey: 'kullaniciyonetimi', icon: 'fas fa-user-cog' },
+                { name: 'Rol Tanımları', pageKey: 'rolyönetimi', icon: 'fas fa-user-cog' },
+                { name: 'Bölge Tanımları', pageKey: 'bölgeyonetimi', icon: 'fas fa-user-cog' }
+            ] 
+        },
+        'ayarlar': {
+            title: 'Ayarlar',
+            icon: 'fas fa-cogs',
+            submenus: [
+                { name: 'Genel Ayarlar', pageKey: 'genelayarlar', icon: 'fas fa-sliders-h' }
+               
+            ]
+        }
+    };
+
+    // Header menü oluştur
+    Object.keys(menuData).forEach((key, idx) => {
+        const headerItem = document.createElement('div');
+        headerItem.textContent = menuData[key].title;
+        if(idx === 0) headerItem.classList.add('active');
+
+        headerItem.addEventListener('click', () => {
+            document.querySelectorAll('.header-menu div').forEach(d => d.classList.remove('active'));
+            headerItem.classList.add('active');
+
+            sidebarMenus.innerHTML = '';
+            const submenus = menuData[key].submenus || [];
+
+            submenus.forEach(sm => {
+                const link = document.createElement('a');
+                link.className = 'nav-link flex items-center';
+                link.href = '#';
+                link.innerHTML = `<i class="${sm.icon} w-5 text-center"></i> <span class="menu-text">${sm.name}</span>`;
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadPage(sm.pageKey, link);
+                });
+                // Not: li elementi olmadan direkt a eklemek de çalışır, ancak sarmallamak daha iyi bir pratiktir.
+                // Şimdilik sizin kodunuza sadık kalıyoruz.
+                sidebarMenus.appendChild(link); 
+            });
+
+            const firstSubmenuLink = sidebarMenus.querySelector('a');
+            if(firstSubmenuLink) {
+                firstSubmenuLink.click();
+            }
+        });
+
+        headerMenu.appendChild(headerItem);
+    });
+
+    // İlk header tıklama
+    if (document.querySelector('.header-menu div')) {
+        document.querySelector('.header-menu div').click();
+    }
+    
+   async function loadPage(pageKey, activeLink = null){
+    pageContent.innerHTML = "<p class='p-4 text-gray-500'>Yükleniyor...</p>";
+
+    const fileName = "_" + pageKey + ".html";
+    try {
+        const response = await fetch(fileName);
+        if (!response.ok) {
+            throw new Error(`Dosya bulunamadı: ${fileName}`);
+        }
+        const html = await response.text();
+        pageContent.innerHTML = html;
+
+        // ---- Tüm script etiketlerini yeniden çalıştır ----
+        const oldScripts = pageContent.querySelectorAll("script");
+        oldScripts.forEach(oldScript => {
+            const newScript = document.createElement("script");
+            if (oldScript.src) {
+                // Harici JS dosyası
+                newScript.src = oldScript.src;
+            } else {
+                // Inline JS kodu
+                newScript.textContent = oldScript.textContent;
+            }
+            document.body.appendChild(newScript).remove();
+        });
+        // --------------------------------------------------
+
+        if(activeLink){
+            document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+            activeLink.classList.add('active');
+        }
+    } catch(error) {
+        console.error("Sayfa yükleme hatası:", error);
+        pageContent.innerHTML=`<div class='p-4 bg-red-100 text-red-700 rounded-lg'>Sayfa yüklenemedi. Detaylar için konsolu kontrol edin.</div>`;
+    }
+    if (pageKey === "grafikler") {
+    initGrafikler();
+}
+if (pageKey === "etkinliktakvimi") {
+    initEtkinlikTakvimi();
+}
+if (pageKey === "uyelistesi") {
+    initUyeListesi();
+}
+if (pageKey === "gonullulistesi") {
+    initGonulluListesi(); 
+}
+if (pageKey === "bagistakibi") {
+    initBagisTakibi();
+}   
+if (pageKey === "gidertakibi") {
+    initGiderTakibi();
+}
+if (pageKey === "bursyonetimi") {
+    initBursYonetimi();
+}
+if (pageKey === "kullaniciyonetimi") {
+    initKullaniciYonetimi();
+}
+if (pageKey === "rolyönetimi") {
+    initRolYonetimi();  
+}
+if (pageKey === "bölgeyonetimi") {
+    initBolgeYonetimi();  
+}
+if (pageKey === "yenietkinlik") {
+    initYeniEtkinlik();
+    }
+if (pageKey === "yeniproje") {
+    initYeniProje();
+    } 
+if (pageKey === "genelayarlar") {
+    initGenelAyarlar();
+    }
+    if (pageKey === "projelistesi") {
+    initProjeListesi();
+    }
+    if (pageKey === "faaliyerraporları") {
+    initFaaliyetRaporlari();
+    }
+if (pageKey === "finansalraporlar") {
+    initFinansalRaporlar();
+    }
+    if (pageKey === "etkinliklistesi") {
+    initEtkinlikListesi();
+    }
+  
+    }
+    // Banner tarih
+    document.getElementById('bannerDateTime').textContent =
+        new Date().toLocaleString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Sidebar toggle
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle');
+    sidebarToggleBtn.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('w-16')); // w-64 idi, w-16 daha iyi bir daraltma olabilir.
+
+    // Tema toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        themeIcon.className = document.body.classList.contains('dark') ? 'fas fa-sun' : 'fas fa-moon';
+    });
+
+    // Fullscreen
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    fullscreenBtn.addEventListener('click', () => {
+        if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else if (document.exitFullscreen) document.exitFullscreen();
+    });
+
+    // User menu
+    const userMenuBtn = document.getElementById('user-menu-button');
+    const userMenuDropdown = document.getElementById('user-menu-dropdown');
+    userMenuBtn.addEventListener('click', (e)=> {
+        e.stopPropagation();
+        userMenuDropdown.classList.toggle('hidden');
+    });
+    document.addEventListener('click', ()=> userMenuDropdown.classList.add('hidden'));
+
+    // Ayarlar paneli
+    const ayarlarBtn = document.getElementById('ayarlar-btn');
+    const ayarlarPanel = document.getElementById('ayarlar-panel');
+    const ayarlarOverlay = document.getElementById('ayarlar-panel-overlay');
+    const ayarlarCloseBtn = document.getElementById('ayarlar-panel-close-btn');
+
+    function openAyarlar() { ayarlarPanel.classList.add('active'); ayarlarOverlay.classList.add('active'); }
+    function closeAyarlar() { ayarlarPanel.classList.remove('active'); ayarlarOverlay.classList.remove('active'); }
+
+    if (ayarlarBtn) ayarlarBtn.addEventListener('click', openAyarlar);
+    if (ayarlarOverlay) ayarlarOverlay.addEventListener('click', closeAyarlar);
+    if (ayarlarCloseBtn) ayarlarCloseBtn.addEventListener('click', closeAyarlar);
+});
+  </script>
+</body>
+</html>

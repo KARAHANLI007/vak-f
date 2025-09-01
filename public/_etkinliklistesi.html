@@ -1,0 +1,199 @@
+<section class="bg-white page-content-bg rounded-[15px] p-6 h-full flex flex-col">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold">Etkinlik Listesi</h1>
+        <button id="open-etkinlik-modal-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-sm flex items-center">
+            <i class="fas fa-plus mr-2"></i>Yeni Etkinlik Ekle
+        </button>
+    </div>
+
+    <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
+        <div class="relative w-full md:flex-1">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" placeholder="Etkinlik adına göre ara..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+        <select class="border border-gray-300 rounded-lg px-3 py-2 w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option>Tüm Durumlar</option>
+            <option>Yaklaşan</option>
+            <option>Tamamlandı</option>
+            <option>İptal Edildi</option>
+        </select>
+        <div class="flex items-center border border-gray-300 rounded-lg">
+            <button class="bg-gray-200 text-gray-700 px-3 py-2 rounded-l-lg border-r"><i class="fas fa-list"></i></button>
+            <button class="text-gray-500 px-3 py-2 rounded-r-lg hover:bg-gray-100"><i class="fas fa-calendar-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-gray-50 border-b">
+                <tr>
+                    <th class="p-3 text-sm font-semibold text-gray-600">Etkinlik Adı</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600">Tarih ve Saat</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600">Konum</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600">Katılımcılar</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600">Durum</th>
+                    <th class="p-3 text-sm font-semibold text-gray-600 text-right">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                <tr class="hover:bg-gray-50">
+                    <td class="p-3 font-bold">Gönüllü Tanışma Kahvaltısı</td>
+                    <td class="p-3 text-sm text-gray-600">25 Ağustos 2025, 10:00</td>
+                    <td class="p-3 text-sm text-gray-600">Vakıf Merkezi</td>
+                    <td class="p-3 text-sm text-gray-600">45 / 50</td>
+                    <td class="p-3"><span class="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-xs font-semibold">Yaklaşan</span></td>
+                    <td class="p-3 text-right"><button class="text-gray-500 hover:text-green-600 p-2"><i class="fas fa-pencil-alt"></i></button><button class="text-gray-500 hover:text-red-600 p-2"><i class="fas fa-trash"></i></button></td>
+                </tr>
+                 <tr class="hover:bg-gray-50">
+                    <td class="p-3 font-bold">Yazılım Atölyesi</td>
+                    <td class="p-3 text-sm text-gray-600">15 Ağustos 2025, 14:00</td>
+                    <td class="p-3 text-sm text-gray-600">Online / Zoom</td>
+                    <td class="p-3 text-sm text-gray-600">112 / 120</td>
+                    <td class="p-3"><span class="bg-green-100 text-green-700 rounded-full px-3 py-1 text-xs font-semibold">Tamamlandı</span></td>
+                    <td class="p-3 text-right"><button class="text-gray-500 hover:text-blue-600 p-2"><i class="fas fa-chart-bar"></i></button><button class="text-gray-500 hover:text-green-600 p-2"><i class="fas fa-pencil-alt"></i></button></td>
+                </tr>
+                 <tr class="hover:bg-gray-50">
+                    <td class="p-3 font-bold">Kitap Fuarı Gezisi</td>
+                    <td class="p-3 text-sm text-gray-600">01 Temmuz 2025, 09:00</td>
+                    <td class="p-3 text-sm text-gray-600">TÜYAP Fuar Merkezi</td>
+                    <td class="p-3 text-sm text-gray-600">30 / 30</td>
+                    <td class="p-3"><span class="bg-red-100 text-red-700 rounded-full px-3 py-1 text-xs font-semibold">İptal Edildi</span></td>
+                    <td class="p-3 text-right"><button class="text-gray-500 hover:text-green-600 p-2"><i class="fas fa-pencil-alt"></i></button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div id="add-etkinlik-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center p-5 border-b">
+            <h2 class="text-xl font-semibold text-slate-700">Yeni Etkinlik Oluştur</h2>
+            <button class="close-etkinlik-modal-btn text-gray-400 hover:text-gray-600"><i class="fas fa-times fa-lg"></i></button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <form id="add-etkinlik-form" class="space-y-4">
+                <div><label for="etkinlik-adi" class="block text-sm font-medium text-gray-700">Etkinlik Adı</label><input type="text" name="etkinlik-adi" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                <div><label for="etkinlik-aciklama" class="block text-sm font-medium text-gray-700">Açıklama</label><textarea name="etkinlik-aciklama" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></textarea></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label for="etkinlik-turu" class="block text-sm font-medium text-gray-700">Etkinlik Türü</label><select name="etkinlik-turu" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"><option>Seminer</option><option>Atölye</option><option>Kamp</option><option>Sosyal Faaliyet</option></select></div>
+                    <div><label for="etkinlik-konum" class="block text-sm font-medium text-gray-700">Konum</label><input type="text" name="etkinlik-konum" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label for="baslangic-tarihi" class="block text-sm font-medium text-gray-700">Başlangıç Tarihi</label><input type="datetime-local" name="baslangic-tarihi" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div><label for="bitis-tarihi" class="block text-sm font-medium text-gray-700">Bitiş Tarihi</label><input type="datetime-local" name="bitis-tarihi" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+                </div>
+                 <div><label for="etkinlik-kontenjan" class="block text-sm font-medium text-gray-700">Kontenjan</label><input type="number" name="etkinlik-kontenjan" placeholder="0" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></div>
+            </form>
+        </div>
+        <div class="flex justify-end items-center gap-3 p-5 border-t bg-gray-50 rounded-b-2xl">
+            <button type="button" class="close-etkinlik-modal-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">İptal</button>
+            <button type="submit" form="add-etkinlik-form" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Etkinliği Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    #add-etkinlik-modal { transition: opacity 0.3s ease; }
+</style>
+
+<script>
+ function initEtkinlikListesi() {
+    const modal = document.getElementById('add-etkinlik-modal');
+    const openModalBtn = document.getElementById('open-etkinlik-modal-btn');
+    const closeModalBtns = document.querySelectorAll('.close-etkinlik-modal-btn');
+    const addEtkinlikForm = document.getElementById('add-etkinlik-form');
+    const tbody = document.querySelector('table tbody');
+
+    let editingRow = null; // Düzenlenen satırı tutacak
+
+    const openModal = () => modal.classList.remove('hidden');
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        addEtkinlikForm.reset();
+        editingRow = null;
+    };
+
+    openModalBtn.addEventListener('click', openModal);
+    closeModalBtns.forEach(btn => btn.addEventListener('click', closeModal));
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    const getDurumLabel = (baslangic) => {
+        const now = new Date();
+        if (baslangic > now) return `<span class="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-xs font-semibold">Yaklaşan</span>`;
+        else return `<span class="bg-green-100 text-green-700 rounded-full px-3 py-1 text-xs font-semibold">Tamamlandı</span>`;
+    };
+
+    const bindRowActions = (row) => {
+        // Silme
+        row.querySelector('.delete-btn').addEventListener('click', () => row.remove());
+
+        // Düzenleme
+        row.querySelector('.edit-btn').addEventListener('click', () => {
+            editingRow = row;
+            const cells = row.children;
+            addEtkinlikForm['etkinlik-adi'].value = cells[0].textContent;
+            addEtkinlikForm['baslangic-tarihi'].value = new Date(cells[1].textContent).toISOString().slice(0,16);
+            addEtkinlikForm['etkinlik-konum'].value = cells[2].textContent;
+            addEtkinlikForm['etkinlik-kontenjan'].value = cells[3].textContent.split('/')[1].trim();
+            openModal();
+        });
+    };
+
+    const createRow = (data) => {
+        const baslangicTarihi = new Date(data['baslangic-tarihi']);
+        const durum = getDurumLabel(baslangicTarihi);
+
+        const row = document.createElement('tr');
+        row.classList.add('hover:bg-gray-50');
+        row.innerHTML = `
+            <td class="p-3 font-bold">${data['etkinlik-adi']}</td>
+            <td class="p-3 text-sm text-gray-600">${baslangicTarihi.toLocaleString()}</td>
+            <td class="p-3 text-sm text-gray-600">${data['etkinlik-konum'] || '-'}</td>
+            <td class="p-3 text-sm text-gray-600">0 / ${data['etkinlik-kontenjan'] || 0}</td>
+            <td class="p-3">${durum}</td>
+            <td class="p-3 text-right">
+                <button class="text-gray-500 hover:text-green-600 p-2 edit-btn"><i class="fas fa-pencil-alt"></i></button>
+                <button class="text-gray-500 hover:text-red-600 p-2 delete-btn"><i class="fas fa-trash"></i></button>
+            </td>
+        `;
+        bindRowActions(row);
+        return row;
+    };
+
+    addEtkinlikForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(addEtkinlikForm);
+        const data = Object.fromEntries(formData.entries());
+
+        if (editingRow) {
+            // Düzenleme modu
+            const baslangicTarihi = new Date(data['baslangic-tarihi']);
+            const durum = getDurumLabel(baslangicTarihi);
+
+            editingRow.innerHTML = `
+                <td class="p-3 font-bold">${data['etkinlik-adi']}</td>
+                <td class="p-3 text-sm text-gray-600">${baslangicTarihi.toLocaleString()}</td>
+                <td class="p-3 text-sm text-gray-600">${data['etkinlik-konum'] || '-'}</td>
+                <td class="p-3 text-sm text-gray-600">0 / ${data['etkinlik-kontenjan'] || 0}</td>
+                <td class="p-3">${durum}</td>
+                <td class="p-3 text-right">
+                    <button class="text-gray-500 hover:text-green-600 p-2 edit-btn"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="text-gray-500 hover:text-red-600 p-2 delete-btn"><i class="fas fa-trash"></i></button>
+                </td>
+            `;
+            bindRowActions(editingRow);
+        } else {
+            const newRow = createRow(data);
+            tbody.appendChild(newRow);
+        }
+
+        closeModal();
+    });
+}
+
+// Sayfa yüklendiğinde başlat
+document.addEventListener('DOMContentLoaded', initEtkinlikListesi);
+
+
+</script>
